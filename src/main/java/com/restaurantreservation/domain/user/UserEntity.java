@@ -2,12 +2,7 @@ package com.restaurantreservation.domain.user;
 
 import org.springframework.data.annotation.CreatedDate;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -26,7 +21,6 @@ public class UserEntity{
     @org.springframework.data.annotation.LastModifiedDate
     private LocalDateTime updateDate;
 
-    @Column(length = 255)
     private String password;
 
     private String name;
@@ -38,7 +32,7 @@ public class UserEntity{
     private String userType;
 
     // 유저 상태 체크 - 회원가입 대기 , 활동, 휴먼, 탈퇴 등등
-    @Column(name = "user_status", length = 50)
-    private String userStatus;
+    @Enumerated(value = EnumType.STRING)
+    private UserStatus userStatus;
 
 }
