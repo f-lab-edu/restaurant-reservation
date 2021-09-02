@@ -47,12 +47,13 @@ public class StoreApiController {
             o.setReviews(reviews);
         });
 
-        return new Result(result);
+        return new Result(result.size(), result);
     }
 
     @Data
     @AllArgsConstructor
     static class Result<T> {
+        private int count;
         private T data;
     }
 
