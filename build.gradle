@@ -25,10 +25,8 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'mysql:mysql-connector-java'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	//JUnit4 추가
-	testImplementation("org.junit.vintage:junit-vintage-engine") {
-		exclude group: "org.hamcrest", module: "hamcrest-core"
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
 }
 
