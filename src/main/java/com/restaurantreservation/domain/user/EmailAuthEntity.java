@@ -1,6 +1,7 @@
 package com.restaurantreservation.domain.user;
 
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -22,6 +23,9 @@ public class EmailAuthEntity {
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdDate;
+
+    @LastModifiedDate
+    private LocalDateTime updateDate;
 
     private Long userId;
     //회원가입 시 인증 키

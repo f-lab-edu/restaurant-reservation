@@ -1,6 +1,7 @@
 package com.restaurantreservation.domain.user;
 
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -18,7 +19,7 @@ public class UserEntity{
     @Column(updatable = false)
     private LocalDateTime createdDate;
 
-    @org.springframework.data.annotation.LastModifiedDate
+    @LastModifiedDate
     private LocalDateTime updateDate;
 
     private String password;
