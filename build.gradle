@@ -25,9 +25,15 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'mysql:mysql-connector-java'
 	annotationProcessor 'org.projectlombok:lombok'
+
 	testImplementation("org.junit.vintage:junit-vintage-engine") {
 		exclude group: "org.hamcrest", module: "hamcrest-core"
 	}
+	testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.2'
+
+//	jpa 쿼리 확인을 위해서 추가 - 실 서버 사용 시에는 빼는것을 고려할 필요가 있음
+	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.7.1'
+
 }
 
 test {
