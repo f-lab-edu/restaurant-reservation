@@ -19,13 +19,13 @@ import static org.mockito.Mockito.*;
 
 //Mock 객체를 사용하기 위해 추가
 @ExtendWith(MockitoExtension.class)
-class UserJoinServiceTest {
+class UserServiceTest {
 
     @Mock
     UserRepository userRepository;
 
     @InjectMocks
-    UserJoinService userJoinService;
+    UserService userJoinService;
 
     /**
      * user 회원가입 성공 테스트

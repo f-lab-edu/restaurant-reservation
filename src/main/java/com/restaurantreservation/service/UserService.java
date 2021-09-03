@@ -8,13 +8,14 @@ import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
-public class UserJoinService {
+public class UserService {
 
     private final UserRepository userRepository;
 
     /**
      * 회원 저장 로직 - (아직 Exception 처리 전)
      */
+    //**findById 등을 구현 후 return 값 변경 필요
     public UserEntity userSave(UserValue userValue) {
 
         UserEntity userEntity = UserEntity.create(userValue);
