@@ -6,6 +6,7 @@ import com.restaurantreservation.domain.user.UserType;
 import com.restaurantreservation.domain.user.UserValue;
 import com.restaurantreservation.error.exHandler.CommonExceptionHandler;
 import com.restaurantreservation.error.message.user.UserJoinExceptionMessage;
+import com.restaurantreservation.error.message.user.UserMessage;
 import com.restaurantreservation.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,6 +50,30 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("회원가입 테스트 - 성공")
+    void canUserJoin() throws Exception{
+        UserValue getUserValue = UserValue.builder()
+                .email("test1523User@Naver.com")
+                .password("1q2w3e4r#")
+                .name("아무개")
+                .phoneNumber("010-0000-0000")
+                .userType(UserType.CUSTOMER)
+                .build();
+
+        MockHttpServletResponse getResponse = mvc.perform(
+                post("/user/join")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonUserValue.write(getUserValue)
+                                .getJson()
+                        )).andReturn().getResponse();
+
+        assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(getResponse.getContentAsString()).isEqualTo(
+                new ObjectMapper().writeValueAsString(UserMessage.JOIN_SUCCESS)
+        );
+    }
+
+    @Test
     @DisplayName("회원가입 테스트 - Email 형식 잘못됬을때")
     void cannotUserJoinTestEmailWrong() throws Exception {
         UserValue getUserValue = UserValue.builder()
@@ -56,7 +81,6 @@ class UserControllerTest {
                 .password("1234")
                 .name("아무개")
                 .phoneNumber("010-0000-0000")
-                .userStatus(UserStatus.ACTIVE)
                 .userType(UserType.CUSTOMER)
                 .build();
 
@@ -81,7 +105,6 @@ class UserControllerTest {
                 .password("1234@aAbB")
                 .name("아무개")
                 .phoneNumber("010-0000-0000")
-                .userStatus(UserStatus.ACTIVE)
                 .userType(null)
                 .build();
 
@@ -96,5 +119,4 @@ class UserControllerTest {
         assertThat(getResponse.getContentAsString()).isEqualTo(
                 new ObjectMapper().writeValueAsString(UserJoinExceptionMessage.WRONG_USER_TYPE));
     }
-
 }

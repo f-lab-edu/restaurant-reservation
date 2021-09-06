@@ -12,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -33,14 +32,13 @@ class UserServiceTest {
      */
     @Test
     @DisplayName("유저 회원가입 성공 테스트")
-    void userJoinTest() {
+    void canUserJoin() {
 
         final UserValue userValue = UserValue.builder()
                 .email("test@app.com")
                 .password("1234")
                 .name("아무개")
                 .phoneNumber("010-0000-0000")
-                .userStatus(UserStatus.ACTIVE)
                 .userType(UserType.CUSTOMER)
                 .build();
 
@@ -48,14 +46,11 @@ class UserServiceTest {
         when(userRepository.save(any())).thenReturn(testUserEntity);
 
         //when
-        UserEntity userEntity = userJoinService.userSave(userValue);
+        userJoinService.userSave(userValue);
 
         //then
+        verify(userRepository, times(1)).existsByEmailAndUserStatus("test@app.com", UserStatus.ACTIVE);
         verify(userRepository, times(1)).save(any());
-        verify(userRepository, never()).findAll();
         verifyNoMoreInteractions(userRepository);
-        assertThat(userEntity).isEqualTo(testUserEntity);
-
     }
-
 }

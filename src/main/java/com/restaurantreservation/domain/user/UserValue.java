@@ -23,10 +23,15 @@ public class UserValue {
     private String name;
     private String phoneNumber;
     private UserType userType;
-    private UserStatus userStatus;
 
+    /**
+     * 회원 Valid check 하기 위한 로직
+     */
     public static final String EMAIL_REGEX = "^(.+)@(.+)$";
-    public static final String PASSWORD_REGEX = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,20}$";
+
+    // 숫자, 영문(대소문자 구분) , 특수문자 추가 , 8~20글자 사이
+    // 토이 프로젝트라 주석처리
+//    public static final String PASSWORD_REGEX = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,20}$";
 
 
     public static void validCheck(UserValue userValue) {
@@ -35,17 +40,16 @@ public class UserValue {
                 .matcher(userValue.getEmail())
                 .matches();
 
-        //비밀번호 valid check 는 한번 동작확인하고 막을 계획입니다.
-        boolean passwordRegexCheck = Pattern.compile(PASSWORD_REGEX)
-                .matcher(userValue.getPassword())
-                .matches();
+//        boolean passwordRegexCheck = Pattern.compile(PASSWORD_REGEX)
+//                .matcher(userValue.getPassword())
+//                .matches();
 
         if (!emailRegexCheck) {
             throw new UserJoinException(UserJoinExceptionMessage.WRONG_EMAIL);
         }
-        if (!passwordRegexCheck) {
-            throw new UserJoinException(UserJoinExceptionMessage.WRONG_PASSWORD_FORM);
-        }
+//        if (!passwordRegexCheck) {
+//            throw new UserJoinException(UserJoinExceptionMessage.WRONG_PASSWORD_FORM);
+//        }
         if (userValue.getUserType() == null) {
             throw new UserJoinException(UserJoinExceptionMessage.WRONG_USER_TYPE);
         }

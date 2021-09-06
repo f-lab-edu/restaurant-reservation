@@ -52,8 +52,14 @@ public class UserEntity {
     private UserStatus userStatus;
 
     public static UserEntity create(UserValue userValue) {
-        return new UserEntity(userValue.getEmail(), userValue.getPassword(), userValue.getName(),
-                userValue.getPhoneNumber(), userValue.getUserType(), userValue.getUserStatus());
+        return new UserEntity(
+                userValue.getEmail(),
+                userValue.getPassword(),
+                userValue.getName(),
+                userValue.getPhoneNumber(),
+                userValue.getUserType(),
+                UserStatus.ACTIVE
+        );
     }
 
     private UserEntity(String email, String password, String name, String phoneNumber, UserType userType, UserStatus userStatus) {
