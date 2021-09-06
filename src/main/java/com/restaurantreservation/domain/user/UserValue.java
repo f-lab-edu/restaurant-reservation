@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  *
  */
 @Builder
-@NoArgsConstructor(access = AccessLevel.PACKAGE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Slf4j
