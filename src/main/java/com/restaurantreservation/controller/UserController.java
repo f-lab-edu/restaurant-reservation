@@ -18,10 +18,10 @@ public class UserController {
     private final UserService userJoinService;
 
     @PostMapping("/join")
-    public ResponseEntity<? extends BaseResponse> userJoin(@RequestBody UserValue userValue){
-
+    public ResponseEntity<? extends BaseResponse> userJoin(@RequestBody UserValue userValue) {
+        //valid check
+        UserValue.validCheck(userValue);
         userJoinService.userSave(userValue);
-
 
         return null;
     }

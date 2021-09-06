@@ -13,7 +13,7 @@ public class UserJoinExceptionResponse implements BaseExceptionResponse {
     String errorMessage;
 
     public static UserJoinExceptionResponse of(UserJoinExceptionMessage e) {
-        return new UserJoinExceptionResponse(e.getStatus(), e.getHttpStatus(), e.getErrorMessage());
+        return new UserJoinExceptionResponse(e.getStatus(), e.getHttpCode(), e.getErrorMessage());
     }
 
     private UserJoinExceptionResponse(ResponseStatus status, int httpCode, String errorMessage) {

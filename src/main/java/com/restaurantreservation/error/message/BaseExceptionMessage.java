@@ -4,6 +4,6 @@ import com.restaurantreservation.response.ResponseStatus;
 
 public interface BaseExceptionMessage {
     ResponseStatus getStatus();
-    int getHttpStatus();
+    int getHttpCode();
     String getErrorMessage();
 }
