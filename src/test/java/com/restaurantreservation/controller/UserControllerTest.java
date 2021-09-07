@@ -1,11 +1,10 @@
 package com.restaurantreservation.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.restaurantreservation.domain.user.UserStatus;
 import com.restaurantreservation.domain.user.UserType;
 import com.restaurantreservation.domain.user.UserValue;
 import com.restaurantreservation.error.exHandler.CommonExceptionHandler;
-import com.restaurantreservation.error.message.user.UserJoinExceptionMessage;
+import com.restaurantreservation.error.message.user.UserExceptionMessage;
 import com.restaurantreservation.error.message.user.UserMessage;
 import com.restaurantreservation.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,14 +50,14 @@ class UserControllerTest {
 
     @Test
     @DisplayName("회원가입 테스트 - 성공")
-    void canUserJoin() throws Exception{
-        UserValue getUserValue = UserValue.builder()
-                .email("test1523User@Naver.com")
-                .password("1q2w3e4r#")
-                .name("아무개")
-                .phoneNumber("010-0000-0000")
-                .userType(UserType.CUSTOMER)
-                .build();
+    void canUserJoin() throws Exception {
+        UserValue getUserValue =
+                new UserValue.Builder("test1523User@Naver.com")
+                        .password("1q2w3e4r#")
+                        .name("아무개")
+                        .phoneNumber("010-0000-0000")
+                        .userType(UserType.CUSTOMER)
+                        .build();
 
         MockHttpServletResponse getResponse = mvc.perform(
                 post("/user/join")
@@ -76,13 +75,13 @@ class UserControllerTest {
     @Test
     @DisplayName("회원가입 테스트 - Email 형식 잘못됬을때")
     void cannotUserJoinTestEmailWrong() throws Exception {
-        UserValue getUserValue = UserValue.builder()
-                .email("notEmail")
-                .password("1234")
-                .name("아무개")
-                .phoneNumber("010-0000-0000")
-                .userType(UserType.CUSTOMER)
-                .build();
+        UserValue getUserValue =
+                new UserValue.Builder("test1523User")
+                        .password("1q2w3e4r#")
+                        .name("아무개")
+                        .phoneNumber("010-0000-0000")
+                        .userType(UserType.CUSTOMER)
+                        .build();
 
         MockHttpServletResponse getResponse = mvc.perform(
                 post("/user/join")
@@ -93,20 +92,19 @@ class UserControllerTest {
 
         assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(getResponse.getContentAsString()).isEqualTo(
-                new ObjectMapper().writeValueAsString(UserJoinExceptionMessage.WRONG_EMAIL)
+                new ObjectMapper().writeValueAsString(UserExceptionMessage.WRONG_EMAIL)
         );
     }
 
     @Test
     @DisplayName("회원가입 테스트 - UserType 이 없을 때")
     void cannotUserJoinTestUserTypeWrong() throws Exception {
-        UserValue getUserValue = UserValue.builder()
-                .email("abc@naver.com")
-                .password("1234@aAbB")
-                .name("아무개")
-                .phoneNumber("010-0000-0000")
-                .userType(null)
-                .build();
+        UserValue getUserValue =
+                new UserValue.Builder("test1523User@Naver.com")
+                        .password("1q2w3e4r#")
+                        .name("아무개")
+                        .phoneNumber("010-0000-0000")
+                        .build();
 
         MockHttpServletResponse getResponse = mvc.perform(
                 post("/user/join")
@@ -117,6 +115,6 @@ class UserControllerTest {
 
         assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(getResponse.getContentAsString()).isEqualTo(
-                new ObjectMapper().writeValueAsString(UserJoinExceptionMessage.WRONG_USER_TYPE));
+                new ObjectMapper().writeValueAsString(UserExceptionMessage.WRONG_USER_TYPE));
     }
 }

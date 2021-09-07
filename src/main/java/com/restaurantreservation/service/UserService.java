@@ -4,8 +4,8 @@ import com.restaurantreservation.domain.user.UserEntity;
 import com.restaurantreservation.domain.user.UserStatus;
 import com.restaurantreservation.domain.user.UserValue;
 import com.restaurantreservation.encrypt.Encryption;
-import com.restaurantreservation.error.exception.user.UserJoinException;
-import com.restaurantreservation.error.message.user.UserJoinExceptionMessage;
+import com.restaurantreservation.error.exception.user.UserException;
+import com.restaurantreservation.error.message.user.UserExceptionMessage;
 import com.restaurantreservation.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -40,12 +40,27 @@ public class UserService {
         userRepository.save(userEntity);
     }
 
+    public UserValue findByUserId(Long id) {
+        UserEntity userEntity = userRepository.findById(id).orElseThrow(
+                () -> new UserException(UserExceptionMessage.USER_NOT_FOUNT)
+        );
+        UserValue userValue = new UserValue.Builder(userEntity.getEmail())
+                .name(userEntity.getName())
+                .phoneNumber(userEntity.getPhoneNumber())
+                .userType(userEntity.getUserType())
+                .build();
+
+        return userValue;
+    }
+
+
     /**
      * 활동 상태의 email 중복되면 email 중복에러 return
      */
     private void emailDuplicateCheck(UserValue userValue) {
         if (userRepository.existsByEmailAndUserStatus(userValue.getEmail(), UserStatus.ACTIVE)) {
-            throw new UserJoinException(UserJoinExceptionMessage.DUPLICATED_EMAIL);
+            throw new UserException(UserExceptionMessage.DUPLICATED_EMAIL);
         }
     }
+
 }

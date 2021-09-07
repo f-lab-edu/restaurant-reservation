@@ -1,19 +1,18 @@
 package com.restaurantreservation.domain.user;
 
 
-import com.restaurantreservation.error.exception.user.UserJoinException;
-import com.restaurantreservation.error.message.user.UserJoinExceptionMessage;
+import com.restaurantreservation.error.exception.user.UserException;
+import com.restaurantreservation.error.message.user.UserExceptionMessage;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
 
 import java.util.regex.Pattern;
 
 /**
  *
  */
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Slf4j
 public class UserValue {
@@ -45,16 +44,63 @@ public class UserValue {
 //                .matches();
 
         if (!emailRegexCheck) {
-            throw new UserJoinException(UserJoinExceptionMessage.WRONG_EMAIL);
+            throw new UserException(UserExceptionMessage.WRONG_EMAIL);
         }
 //        if (!passwordRegexCheck) {
 //            throw new UserJoinException(UserJoinExceptionMessage.WRONG_PASSWORD_FORM);
 //        }
         if (userValue.getUserType() == null) {
-            throw new UserJoinException(UserJoinExceptionMessage.WRONG_USER_TYPE);
+            throw new UserException(UserExceptionMessage.WRONG_USER_TYPE);
         }
     }
 
 
+    public static class Builder {
+
+        // 필수 인자
+        private final String email;
+
+        // 선택
+        private UserType userType;
+        private String password;
+        private String name;
+        private String phoneNumber;
+
+        public Builder(String email) {
+            this.email = email;
+        }
+
+        public Builder userType(UserType userType) {
+            this.userType = userType;
+            return this;
+        }
+
+        public Builder password(String password) {
+            this.password = password;
+            return this;
+        }
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder phoneNumber(String phoneNumber){
+            this.phoneNumber = phoneNumber;
+            return this;
+        }
+
+        public UserValue build() {
+            return new UserValue(email, password, name, phoneNumber, userType);
+        }
+    }
+
+    private UserValue(String email, String password, String name, String phoneNumber, UserType userType) {
+        this.email = email;
+        this.password = password;
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+        this.userType = userType;
+    }
 }
 

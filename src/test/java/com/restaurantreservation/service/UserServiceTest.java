@@ -12,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -44,8 +43,7 @@ class UserServiceTest {
         final String salt = "11111111";
 
 
-        final UserValue userValue = UserValue.builder()
-                .email("test@app.com")
+        final UserValue userValue = new UserValue.Builder("test@app.com")
                 .password(password)
                 .name("아무개")
                 .phoneNumber("010-0000-0000")
