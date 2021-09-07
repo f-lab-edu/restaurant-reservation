@@ -3,6 +3,7 @@ package com.restaurantreservation.service;
 import com.restaurantreservation.domain.user.UserEntity;
 import com.restaurantreservation.domain.user.UserStatus;
 import com.restaurantreservation.domain.user.UserValue;
+import com.restaurantreservation.encrypt.Encryption;
 import com.restaurantreservation.error.exception.user.UserJoinException;
 import com.restaurantreservation.error.message.user.UserJoinExceptionMessage;
 import com.restaurantreservation.repository.user.UserRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final Encryption encryption;
 
     /**
      * 회원 저장 로직 - (아직 Exception 처리 전)
@@ -23,7 +25,18 @@ public class UserService {
         //이미 저장된 아이디(email) 인지 체크
         emailDuplicateCheck(userValue);
 
-        UserEntity userEntity = UserEntity.create(userValue);
+        //패스워드 암호화
+        String salt = encryption.createSALT();
+        String encryptedPassword = encryption.encrypt(userValue.getPassword(), salt);
+
+        UserEntity userEntity = UserEntity.create(
+                userValue.getEmail(),
+                encryptedPassword,
+                salt,
+                userValue.getName(),
+                userValue.getPhoneNumber(),
+                userValue.getUserType());
+
         userRepository.save(userEntity);
     }
 

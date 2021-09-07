@@ -22,7 +22,7 @@ public class UserController {
     @PostMapping("/join")
     public ResponseEntity<? extends BaseResponse> userJoin(@RequestBody UserValue userValue) {
         //valid check
-        UserValue.validCheck(userValue);
+        UserValue.isValid(userValue);
         userJoinService.userSave(userValue);
 
         return ResponseEntity.ok(UserResponse.of(UserMessage.JOIN_SUCCESS));

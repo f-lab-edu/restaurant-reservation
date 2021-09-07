@@ -38,6 +38,9 @@ public class UserEntity {
 
     private String password;
 
+    //패스워드 소팅 글자를 같이 저장 - 실무에서는 다른 저장 방법같은 경우로 고려
+    private String salt;
+
     private String name;
 
     @Column(name = "phone_number")
@@ -53,23 +56,27 @@ public class UserEntity {
     @Enumerated(value = EnumType.STRING)
     private UserStatus userStatus;
 
-    public static UserEntity create(UserValue userValue) {
+    public static UserEntity create(String email, String encryptedPassword, String salt, String name, String phoneNumber, UserType userType) {
         return new UserEntity(
-                userValue.getEmail(),
-                userValue.getPassword(),
-                userValue.getName(),
-                userValue.getPhoneNumber(),
-                userValue.getUserType(),
+                email,
+                encryptedPassword,
+                salt,
+                name,
+                phoneNumber,
+                userType,
                 UserStatus.ACTIVE
         );
     }
 
-    private UserEntity(String email, String password, String name, String phoneNumber, UserType userType, UserStatus userStatus) {
+    private UserEntity(String email, String password,String salt, String name, String phoneNumber, UserType userType, UserStatus userStatus) {
         this.email = email;
         this.password = password;
+        this.salt = salt;
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.userType = userType;
         this.userStatus = userStatus;
     }
+
+
 }

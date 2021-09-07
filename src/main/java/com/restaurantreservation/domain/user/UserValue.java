@@ -34,7 +34,7 @@ public class UserValue {
 //    public static final String PASSWORD_REGEX = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,20}$";
 
 
-    public static void validCheck(UserValue userValue) {
+    public static void isValid(UserValue userValue) {
 
         boolean emailRegexCheck = Pattern.compile(EMAIL_REGEX)
                 .matcher(userValue.getEmail())
@@ -54,5 +54,7 @@ public class UserValue {
             throw new UserJoinException(UserJoinExceptionMessage.WRONG_USER_TYPE);
         }
     }
+
+
 }
 
