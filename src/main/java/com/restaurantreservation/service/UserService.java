@@ -5,7 +5,7 @@ import com.restaurantreservation.domain.user.UserStatus;
 import com.restaurantreservation.domain.user.UserValue;
 import com.restaurantreservation.encrypt.Encryption;
 import com.restaurantreservation.error.exception.user.UserException;
-import com.restaurantreservation.error.message.user.UserExceptionMessage;
+import com.restaurantreservation.response.message.user.UserExceptionMessage;
 import com.restaurantreservation.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

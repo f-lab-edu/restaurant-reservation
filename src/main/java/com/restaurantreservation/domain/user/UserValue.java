@@ -2,10 +2,9 @@ package com.restaurantreservation.domain.user;
 
 
 import com.restaurantreservation.error.exception.user.UserException;
-import com.restaurantreservation.error.message.user.UserExceptionMessage;
+import com.restaurantreservation.response.message.user.UserExceptionMessage;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
 
 import java.util.regex.Pattern;
 

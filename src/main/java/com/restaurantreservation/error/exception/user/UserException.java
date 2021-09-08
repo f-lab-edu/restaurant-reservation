@@ -1,6 +1,6 @@
 package com.restaurantreservation.error.exception.user;
 
-import com.restaurantreservation.error.message.user.UserExceptionMessage;
+import com.restaurantreservation.response.message.user.UserExceptionMessage;
 import lombok.Getter;
 
 public class UserException extends RuntimeException {

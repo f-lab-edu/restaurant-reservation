@@ -1,6 +1,6 @@
 package com.restaurantreservation.response;
 
-public interface BaseExceptionResponse extends BaseResponse {
+public interface BaseExceptionResponse {
     ResponseStatus getStatus();
     int getHttpCode();
     String getErrorMessage();

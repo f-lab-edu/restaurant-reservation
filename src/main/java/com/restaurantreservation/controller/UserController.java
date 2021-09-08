@@ -1,7 +1,7 @@
 package com.restaurantreservation.controller;
 
 import com.restaurantreservation.domain.user.UserValue;
-import com.restaurantreservation.error.message.user.UserMessage;
+import com.restaurantreservation.response.message.user.UserMessage;
 import com.restaurantreservation.response.BaseResponse;
 import com.restaurantreservation.response.user.UserResponse;
 import com.restaurantreservation.service.UserService;
@@ -27,10 +27,7 @@ public class UserController {
 
 //    @GetMapping("/{id}")
 //    public ResponseEntity<? extends BaseResponse> userFind(@PathVariable Long id) {
-//
 //        UserValue getUserValue = userService.findByUserId(id);
-//
-//
 //    }
 
 
