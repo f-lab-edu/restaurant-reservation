@@ -18,7 +18,7 @@ public class UserService {
     private final Encryption encryption;
 
     /**
-     * 회원 저장 로직 - (아직 Exception 처리 전)
+     * 회원 저장 로직
      */
     public void userSave(UserValue userValue) {
 
@@ -44,15 +44,30 @@ public class UserService {
         UserEntity userEntity = userRepository.findById(id).orElseThrow(
                 () -> new UserException(UserExceptionMessage.USER_NOT_FOUNT)
         );
-        UserValue userValue = new UserValue.Builder(userEntity.getEmail())
+
+        return convertUserEntityToUserValue(userEntity);
+    }
+
+    public UserValue findByUserEmail(String email) {
+        UserEntity userEntity = userRepository.findByEmail(email).orElseThrow(
+                () -> new UserException(UserExceptionMessage.USER_NOT_FOUNT)
+        );
+
+        return convertUserEntityToUserValue(userEntity);
+    }
+
+
+    /**
+     * 규모가 커지고 여러곳에서 사용한다면 converter 등의 사용을 고려해 볼것..
+     * 현재는 userService 외에서 사용을 거의 안할 것 같아서 여기서 구현
+     */
+    private UserValue convertUserEntityToUserValue(UserEntity userEntity) {
+        return new UserValue.Builder(userEntity.getEmail())
                 .name(userEntity.getName())
                 .phoneNumber(userEntity.getPhoneNumber())
                 .userType(userEntity.getUserType())
                 .build();
-
-        return userValue;
     }
-
 
     /**
      * 활동 상태의 email 중복되면 email 중복에러 return
