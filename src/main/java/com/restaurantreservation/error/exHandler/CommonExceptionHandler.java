@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * exception 처리를 위한 공통
+ * controllerAdvice 구현
+ */
 @Slf4j
 @RestControllerAdvice
 public class CommonExceptionHandler {

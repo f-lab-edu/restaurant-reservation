@@ -6,6 +6,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
+/**
+ * 비밀번호 암호화를 위해 사용
+ * 1. SHA-256 으로 단방향 암호화 사용
+ * 2. SHA-256 으로 하기 전에 소팅(salting) 을 추가,
+ * 3. 한번만 돌리는 것이 아니라 키 스트레칭으로 여러번 돌려서 보안성을 높입니다.
+ */
 @Component
 public class Encryption {
     /**

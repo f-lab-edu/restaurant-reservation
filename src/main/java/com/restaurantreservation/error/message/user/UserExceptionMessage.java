@@ -7,6 +7,10 @@ import lombok.Getter;
 
 import static com.restaurantreservation.response.ResponseStatus.*;
 
+/**
+ * userException 이 터졌을때 보내는 message 들
+ * @JsonFormat - test code 작성을 위해 추가
+ */
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 @Getter
 public enum UserExceptionMessage implements BaseExceptionMessage {

@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.regex.Pattern;
 
 /**
- *
+ * Client 에서 User 정보를 받아오는 부분
  */
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -54,6 +54,9 @@ public class UserValue {
     }
 
 
+    /**
+     * 필수값 email, 나머지는 선택값으로 builder 구현
+     */
     public static class Builder {
 
         // 필수 인자
@@ -84,7 +87,7 @@ public class UserValue {
             return this;
         }
 
-        public Builder phoneNumber(String phoneNumber){
+        public Builder phoneNumber(String phoneNumber) {
             this.phoneNumber = phoneNumber;
             return this;
         }

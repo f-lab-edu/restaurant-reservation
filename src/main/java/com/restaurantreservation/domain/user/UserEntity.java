@@ -11,6 +11,12 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+ * user - DB 연결하는 부분
+ * 주의점
+ * 1. 비밀번호는 암호화 된 채로 들어가야 합니다.
+ * 2. 비밀번호가 client 단까지 노출되지 않게 신경을 써야 합니다.
+ */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity

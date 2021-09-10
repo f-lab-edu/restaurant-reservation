@@ -25,8 +25,10 @@ public class UserService {
         //이미 저장된 아이디(email) 인지 체크
         emailDuplicateCheck(userValue);
 
-        //패스워드 암호화
+        //신규 salt 생성
         String salt = encryption.createSALT();
+
+        //패스워드 암호화
         String encryptedPassword = encryption.encrypt(userValue.getPassword(), salt);
 
         UserEntity userEntity = UserEntity.create(
