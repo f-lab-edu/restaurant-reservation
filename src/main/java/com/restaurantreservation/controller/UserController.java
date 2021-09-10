@@ -1,11 +1,9 @@
 package com.restaurantreservation.controller;
 
 import com.restaurantreservation.domain.user.UserValue;
-import com.restaurantreservation.response.message.user.UserMessage;
-import com.restaurantreservation.response.BaseResponse;
-import com.restaurantreservation.response.user.UserResponse;
 import com.restaurantreservation.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,12 +15,12 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/join")
-    public ResponseEntity<? extends BaseResponse> userJoin(@RequestBody UserValue userValue) {
+    public ResponseEntity<Object> userJoin(@RequestBody UserValue userValue) {
         //valid check
         UserValue.isValid(userValue);
         userService.userSave(userValue);
 
-        return ResponseEntity.ok(UserResponse.of(UserMessage.JOIN_SUCCESS));
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
 //    @GetMapping("/{id}")

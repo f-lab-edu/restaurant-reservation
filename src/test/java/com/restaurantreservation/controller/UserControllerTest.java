@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.restaurantreservation.domain.user.UserType;
 import com.restaurantreservation.domain.user.UserValue;
 import com.restaurantreservation.error.exHandler.CommonExceptionHandler;
-import com.restaurantreservation.response.message.user.UserExceptionMessage;
-import com.restaurantreservation.response.message.user.UserMessage;
+import com.restaurantreservation.error.message.user.UserExceptionMessage;
 import com.restaurantreservation.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -66,10 +65,7 @@ class UserControllerTest {
                                 .getJson()
                         )).andReturn().getResponse();
 
-        assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
-        assertThat(getResponse.getContentAsString()).isEqualTo(
-                new ObjectMapper().writeValueAsString(UserMessage.JOIN_SUCCESS)
-        );
+        assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.CREATED.value());
     }
 
     @Test

@@ -1,6 +1,6 @@
 package com.restaurantreservation.response.user;
 
-import com.restaurantreservation.response.message.user.UserExceptionMessage;
+import com.restaurantreservation.error.message.user.UserExceptionMessage;
 import com.restaurantreservation.response.BaseExceptionResponse;
 import com.restaurantreservation.response.ResponseStatus;
 import lombok.Value;

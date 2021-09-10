@@ -1,7 +1,7 @@
-package com.restaurantreservation.response.message.user;
+package com.restaurantreservation.error.message.user;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.restaurantreservation.response.message.BaseExceptionMessage;
+import com.restaurantreservation.error.message.BaseExceptionMessage;
 import com.restaurantreservation.response.ResponseStatus;
 import lombok.Getter;
 

@@ -1,4 +1,4 @@
-package com.restaurantreservation.response.message;
+package com.restaurantreservation.error.message;
 
 import com.restaurantreservation.response.ResponseStatus;
 
