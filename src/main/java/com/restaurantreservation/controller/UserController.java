@@ -18,7 +18,7 @@ public class UserController {
     public ResponseEntity<Object> userJoin(@RequestBody UserValue userValue) {
         //valid check
         UserValue.isValid(userValue);
-        userService.userSave(userValue);
+        userService.userSaveAndUserHistorySave(userValue);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

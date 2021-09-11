@@ -1,14 +1,18 @@
 package com.restaurantreservation.service;
 
+import com.restaurantreservation.domain.history.UserStatusHistory;
 import com.restaurantreservation.domain.user.UserEntity;
 import com.restaurantreservation.domain.user.UserStatus;
 import com.restaurantreservation.domain.user.UserValue;
 import com.restaurantreservation.encrypt.Encryption;
 import com.restaurantreservation.error.exception.user.UserException;
 import com.restaurantreservation.error.message.user.UserExceptionMessage;
+import com.restaurantreservation.repository.history.UserStatusHistoryRepository;
 import com.restaurantreservation.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 @RequiredArgsConstructor
 @Service
@@ -16,11 +20,14 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final Encryption encryption;
+    private final UserStatusHistoryRepository userStatusHistoryRepository;
 
     /**
      * 회원 저장 로직
+     *
+     * @return
      */
-    public void userSave(UserValue userValue) {
+    private Long userSave(UserValue userValue) {
 
         //이미 저장된 아이디(email) 인지 체크
         emailDuplicateCheck(userValue);
@@ -39,7 +46,25 @@ public class UserService {
                 userValue.getPhoneNumber(),
                 userValue.getUserType());
 
-        userRepository.save(userEntity);
+        UserEntity entity = userRepository.save(userEntity);
+
+        return entity.getId();
+    }
+
+    /**
+     * history 에 저장
+     */
+    public void userStatusHistorySave(Long userId, UserStatus userStatus) {
+        userStatusHistoryRepository.save(UserStatusHistory.of(userId, userStatus));
+    }
+
+    /**
+     * user 를 저장하고 그 기록을 history 에 저장
+     */
+    @Transactional
+    public void userSaveAndUserHistorySave(UserValue userValue) {
+        Long userId = userSave(userValue);
+        userStatusHistorySave(userId, UserStatus.ACTIVE);
     }
 
     public UserValue findByUserId(Long id) {
@@ -49,6 +74,7 @@ public class UserService {
 
         return convertUserEntityToUserValue(userEntity);
     }
+
 
     public UserValue findByUserEmail(String email) {
         UserEntity userEntity = userRepository.findByEmail(email).orElseThrow(
