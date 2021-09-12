@@ -21,10 +21,6 @@ public class Menu {
     private String name;
     private Long price;
 
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn
-    private Store store;
-
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdDate;

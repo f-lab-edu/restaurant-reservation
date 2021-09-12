@@ -9,8 +9,6 @@ import javax.persistence.*;
 
 import java.time.LocalDateTime;
 
-import static javax.persistence.FetchType.LAZY;
-
 @Entity
 @Getter @Setter
 public class Review {
@@ -19,9 +17,9 @@ public class Review {
     private Long id;
 
     private String content;
-    private Long user_id;
+    private Long userId;
     private int score;
-    private Long store_id;
+    private Long storeId;
 
     @CreatedDate
     @Column(updatable = false)

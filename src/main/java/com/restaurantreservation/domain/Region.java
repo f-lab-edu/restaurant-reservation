@@ -17,10 +17,10 @@ public class Region {
     @Id
     private Long id;
 
-    private Long depth1_key;
-    private String depth1_name;
-    private Long depth2_key;
-    private String depth2_name;
+    private Long depth1Key;
+    private String depth1Name;
+    private Long depth2Key;
+    private String depth2Name;
 
     @CreatedDate
     @Column(updatable = false)

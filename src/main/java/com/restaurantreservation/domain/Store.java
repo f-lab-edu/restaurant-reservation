@@ -19,13 +19,14 @@ public class Store {
 
     private String name;
     private String address;
-    private Long category_id;
-    private Long region_depth1;
-    private Long region_depth2;
-    private String business_hour;
+    private Long categoryId;
+    private Long regionDepth1;
+    private Long regionDepth2;
+    private String businessHour;
     private String telephone;
 
-    @OneToMany(mappedBy = "store")
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id")
     private List<Menu> menus = new ArrayList<>();
 
     @CreatedDate
