@@ -25,9 +25,8 @@ public class UserService {
     /**
      * 회원 저장 로직
      *
-     * @return
      */
-    private Long userSave(UserValue userValue) {
+    public Long userSave(UserValue userValue) {
 
         //이미 저장된 아이디(email) 인지 체크
         emailDuplicateCheck(userValue);
