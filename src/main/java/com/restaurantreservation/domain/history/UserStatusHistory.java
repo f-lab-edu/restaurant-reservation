@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Value;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "user_status_history")
 public class UserStatusHistory {
 
@@ -28,6 +30,8 @@ public class UserStatusHistory {
     private LocalDateTime createdDate;
 
     private Long userId;
+
+    @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
 
     public static UserStatusHistory of(Long userId, UserStatus userStatus) {
