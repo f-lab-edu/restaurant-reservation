@@ -5,6 +5,7 @@ import com.restaurantreservation.domain.user.UserType;
 import com.restaurantreservation.domain.user.UserValue;
 import com.restaurantreservation.error.exHandler.CommonExceptionHandler;
 import com.restaurantreservation.error.message.user.UserExceptionMessage;
+import com.restaurantreservation.response.user.UserExceptionResponse;
 import com.restaurantreservation.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -88,7 +89,8 @@ class UserControllerTest {
 
         assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(getResponse.getContentAsString()).isEqualTo(
-                new ObjectMapper().writeValueAsString(UserExceptionMessage.WRONG_EMAIL)
+                new ObjectMapper().writeValueAsString(
+                        UserExceptionResponse.of(UserExceptionMessage.WRONG_EMAIL))
         );
     }
 
@@ -111,6 +113,8 @@ class UserControllerTest {
 
         assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(getResponse.getContentAsString()).isEqualTo(
-                new ObjectMapper().writeValueAsString(UserExceptionMessage.WRONG_USER_TYPE));
+                new ObjectMapper().writeValueAsString(
+                        UserExceptionResponse.of(UserExceptionMessage.WRONG_USER_TYPE))
+        );
     }
 }
