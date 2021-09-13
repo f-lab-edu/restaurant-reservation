@@ -54,6 +54,9 @@ public class UserService {
      * history 에 저장
      */
     public void userStatusHistorySave(Long userId, UserStatus userStatus) {
+        if (userId == null || userStatus == null) {
+            throw new UserException(UserExceptionMessage.HISTORY_SAVE_FAIL);
+        }
         userStatusHistoryRepository.save(UserStatusHistory.of(userId, userStatus));
     }
 

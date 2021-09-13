@@ -2,6 +2,7 @@ package com.restaurantreservation.domain.history;
 
 import com.restaurantreservation.domain.user.UserStatus;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Value;
 import org.springframework.data.annotation.CreatedDate;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
  * 회원 상태 변회 기록 테이블 (가입, 탈퇴 등)
  */
 @Entity
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "user_status_history")
 public class UserStatusHistory {
