@@ -1,0 +1,10 @@
+spring:
+  profiles:
+    active: jdbc
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
