@@ -1,6 +1,6 @@
 package com.restaurantreservation.error.message;
 
 public interface BaseExceptionMessage {
-    int getStatus();
+    int getCode();
     String getErrorMessage();
 }

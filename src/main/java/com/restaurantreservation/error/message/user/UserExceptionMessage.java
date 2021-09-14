@@ -19,18 +19,18 @@ public enum UserExceptionMessage implements BaseExceptionMessage {
     WRONG_PASSWORD_FORM(600, "패스워드 형식이 잘못되었습니다."),
     STOPPED_EMAIL(602, "정지된 Email 입니다."),
     WRONG_USER_TYPE(600, "회원 타입을 선택해 주세요"),
-    UNKNOWN_(500, "알 수 없는 오류로 회원 저장에 실패하였습니다."),
+    UNKNOWN_FAIL(500, "알 수 없는 오류로 회원 저장에 실패하였습니다."),
     // 로그인 에러 메세지
     USER_NOT_FOUNT(600, "해당 유저가 존재하지 않습니다."),
 
     // userHistory 에러 메세지
     HISTORY_SAVE_FAIL(500, "회원 history 저장에 실패하였습니다.");
 
-    private final int status;
+    private final int code;
     private final String errorMessage;
 
-    UserExceptionMessage(int status, String errorMessage) {
-        this.status = status;
+    UserExceptionMessage(int code, String errorMessage) {
+        this.code = code;
         this.errorMessage = errorMessage;
     }
 }
