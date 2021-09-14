@@ -5,7 +5,6 @@ import com.restaurantreservation.domain.user.UserType;
 import com.restaurantreservation.domain.user.UserValue;
 import com.restaurantreservation.error.exHandler.CommonExceptionHandler;
 import com.restaurantreservation.error.message.user.UserExceptionMessage;
-import com.restaurantreservation.response.user.UserExceptionResponse;
 import com.restaurantreservation.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -33,6 +32,7 @@ class UserControllerTest {
     @Mock
     private UserService userService;
 
+    //직접 생성해서 넣는것도 확인해보기!!
     @InjectMocks
     private UserController userController;
 
@@ -90,7 +90,11 @@ class UserControllerTest {
         assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(getResponse.getContentAsString()).isEqualTo(
                 new ObjectMapper().writeValueAsString(
-                        UserExceptionResponse.of(UserExceptionMessage.WRONG_EMAIL))
+                        Result.createErrorResult(
+                                UserExceptionMessage.WRONG_EMAIL.getStatus(),
+                                UserExceptionMessage.WRONG_EMAIL.getErrorMessage()
+                        )
+                )
         );
     }
 
@@ -114,7 +118,10 @@ class UserControllerTest {
         assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(getResponse.getContentAsString()).isEqualTo(
                 new ObjectMapper().writeValueAsString(
-                        UserExceptionResponse.of(UserExceptionMessage.WRONG_USER_TYPE))
+                        Result.createErrorResult(
+                                UserExceptionMessage.WRONG_USER_TYPE.getStatus(),
+                                UserExceptionMessage.WRONG_USER_TYPE.getErrorMessage()
+                        ))
         );
     }
 }

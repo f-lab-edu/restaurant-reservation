@@ -1,10 +1,7 @@
 package com.restaurantreservation.domain.history;
 
 import com.restaurantreservation.domain.user.UserStatus;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Value;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -16,7 +13,6 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "user_status_history")
 public class UserStatusHistory {
@@ -41,5 +37,8 @@ public class UserStatusHistory {
     private UserStatusHistory(Long userId, UserStatus userStatus) {
         this.userId = userId;
         this.userStatus = userStatus;
+    }
+
+    protected UserStatusHistory() {
     }
 }

@@ -21,6 +21,7 @@ public class UserController {
         userService.userSaveAndUserHistorySave(userValue);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
+
     }
 
 //    @GetMapping("/{id}")

@@ -8,10 +8,6 @@ public class UserException extends RuntimeException {
     @Getter
     private final UserExceptionMessage userExceptionMessage;
 
-    public static UserException of(UserExceptionMessage userExceptionMessage) {
-        return new UserException(userExceptionMessage);
-    }
-
     public UserException(UserExceptionMessage userJoinExceptionMessage) {
         super(userJoinExceptionMessage.getErrorMessage());
         this.userExceptionMessage = userJoinExceptionMessage;
