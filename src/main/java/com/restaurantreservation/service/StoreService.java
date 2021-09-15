@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -25,40 +26,37 @@ public class StoreService {
     private final ReviewRepository reviewRepository;
 
     /**
-     * 지역 1depth로 음식점 목록을 조회
-     * @param region_depth1 지역 1depth
+     * 음식점 목록을 조회
+     * @param regionDepth1  지역 1depth
+     * @param name          가게 이름
      * @param offset        어디서부터
      * @param limit         어디까지 조회
      * @return              음식점 목록
      */
-    public List<StoreDto> findByRegionDepth1(Long region_depth1, int offset, int limit) {
-        PageRequest pageRequest = PageRequest.of(offset, limit);
-        Page<Store> page = storeRepository.findStoreByRegionDepth1(region_depth1, pageRequest);
+    public List<StoreDto> getStoreList(Long regionDepth1, String name, int offset, int limit) {
+
+        //final List<StoreDto> stores;
+        final PageRequest pageRequest = PageRequest.of(offset, limit);
+        final Page<Store> page;
+
+        if (regionDepth1 != 0 && StringUtils.hasText(name)) {
+            page = storeRepository.findStoreByRegionDepth1(regionDepth1, pageRequest);
+        } else {
+            page = storeRepository.findByRegionDepth1AndNameContaining(regionDepth1, name, pageRequest);
+        }
 
         return page.getContent()
                 .stream()
-                .map(s -> new StoreDto(s, this.findStoreReview(s.getId(), 0, 5)))
+                .map(s -> StoreDto.convertStore(s, this.findStoreReview(s.getId())))
                 .collect(toList());
     }
 
     /**
      * 음식점의 리뷰 목록을 조회
      * @param id        음식점 id
-     * @param offset    어디서부터
-     * @param limit     어디까지 조회
      * @return          음식점의 리뷰 목록
      */
-    public List<Review> findStoreReview(Long id, int offset, int limit) {
+    public List<Review> findStoreReview(Long id) {
         return reviewRepository.findReviewByStoreId(id);
-    }
-
-    public List<StoreDto> findByRegionDepth1AndName(Long regionDepth1, String name, int offset, int limit) {
-        PageRequest pageRequest = PageRequest.of(offset, limit);
-        Page<Store> page = storeRepository.findByRegionDepth1AndNameContaining(regionDepth1, name, pageRequest);
-
-        return page.getContent()
-                .stream()
-                .map(s -> new StoreDto(s, this.findStoreReview(s.getId(), 0, 5)))
-                .collect(toList());
     }
 }

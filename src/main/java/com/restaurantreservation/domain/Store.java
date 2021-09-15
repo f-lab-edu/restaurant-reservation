@@ -26,7 +26,7 @@ public class Store {
     private String telephone;
 
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "store_id")
     private List<Menu> menus = new ArrayList<>();
 
     @CreatedDate

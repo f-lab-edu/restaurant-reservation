@@ -13,5 +13,5 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     Page<Store> findStoreByRegionDepth1(Long regionDepth1, Pageable pageable);
 
     @Query("select s from Store s where s.regionDepth1 = ?1 and s.name like %?2%")
-    Page<Store> findByRegionDepth1AndNameContaining(Long regionDepth1, String name, PageRequest pageRequest);
+    Page<Store> findByRegionDepth1AndNameContaining(Long regionDepth1, String name, Pageable pageable);
 }
