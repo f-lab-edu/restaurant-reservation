@@ -60,8 +60,13 @@ class UserControllerTest {
                         .build();
 
         MockHttpServletResponse getResponse = getMockHttpServletResponseUserJoin(getUserValue);
+        String contentAsString = getResponse.getContentAsString();
 
-        assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.CREATED.value());
+        assertThat(contentAsString).isEqualTo(
+                new ObjectMapper().writeValueAsString(
+                        Result.createStatus(201)
+                )
+        );
     }
 
     @Test
