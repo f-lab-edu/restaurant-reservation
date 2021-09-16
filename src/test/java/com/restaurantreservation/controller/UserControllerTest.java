@@ -32,6 +32,7 @@ class UserControllerTest {
     @Mock
     private UserService userService;
 
+    //직접 생성해서 넣는것도 확인해보기!!
     @InjectMocks
     private UserController userController;
 
@@ -58,14 +59,14 @@ class UserControllerTest {
                         .userType(UserType.CUSTOMER)
                         .build();
 
-        MockHttpServletResponse getResponse = mvc.perform(
-                post("/user/join")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonUserValue.write(getUserValue)
-                                .getJson()
-                        )).andReturn().getResponse();
+        MockHttpServletResponse getResponse = getMockHttpServletResponseUserJoin(getUserValue);
+        String contentAsString = getResponse.getContentAsString();
 
-        assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.CREATED.value());
+        assertThat(contentAsString).isEqualTo(
+                new ObjectMapper().writeValueAsString(
+                        Result.createStatus(201)
+                )
+        );
     }
 
     @Test
@@ -79,16 +80,16 @@ class UserControllerTest {
                         .userType(UserType.CUSTOMER)
                         .build();
 
-        MockHttpServletResponse getResponse = mvc.perform(
-                post("/user/join")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonUserValue.write(getUserValue)
-                                .getJson()
-                        )).andReturn().getResponse();
+        MockHttpServletResponse getResponse = getMockHttpServletResponseUserJoin(getUserValue);
 
         assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(getResponse.getContentAsString()).isEqualTo(
-                new ObjectMapper().writeValueAsString(UserExceptionMessage.WRONG_EMAIL)
+                new ObjectMapper().writeValueAsString(
+                        Result.createErrorResult(
+                                UserExceptionMessage.WRONG_EMAIL.getCode(),
+                                UserExceptionMessage.WRONG_EMAIL.getErrorMessage()
+                        )
+                )
         );
     }
 
@@ -102,15 +103,25 @@ class UserControllerTest {
                         .phoneNumber("010-0000-0000")
                         .build();
 
-        MockHttpServletResponse getResponse = mvc.perform(
+        MockHttpServletResponse getResponse = getMockHttpServletResponseUserJoin(getUserValue);
+
+        assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(getResponse.getContentAsString()).isEqualTo(
+                new ObjectMapper().writeValueAsString(
+                        Result.createErrorResult(
+                                UserExceptionMessage.WRONG_USER_TYPE.getCode(),
+                                UserExceptionMessage.WRONG_USER_TYPE.getErrorMessage()
+                        ))
+        );
+    }
+
+
+    private MockHttpServletResponse getMockHttpServletResponseUserJoin(UserValue getUserValue) throws Exception {
+        return mvc.perform(
                 post("/user/join")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonUserValue.write(getUserValue)
                                 .getJson()
                         )).andReturn().getResponse();
-
-        assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
-        assertThat(getResponse.getContentAsString()).isEqualTo(
-                new ObjectMapper().writeValueAsString(UserExceptionMessage.WRONG_USER_TYPE));
     }
 }

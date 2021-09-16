@@ -1,14 +1,18 @@
 package com.restaurantreservation.service;
 
+import com.restaurantreservation.domain.history.UserStatusHistory;
 import com.restaurantreservation.domain.user.UserEntity;
 import com.restaurantreservation.domain.user.UserStatus;
 import com.restaurantreservation.domain.user.UserValue;
 import com.restaurantreservation.encrypt.Encryption;
 import com.restaurantreservation.error.exception.user.UserException;
 import com.restaurantreservation.error.message.user.UserExceptionMessage;
+import com.restaurantreservation.repository.history.UserStatusHistoryRepository;
 import com.restaurantreservation.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 @RequiredArgsConstructor
 @Service
@@ -16,48 +20,62 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final Encryption encryption;
+    private final UserStatusHistoryRepository userStatusHistoryRepository;
 
     /**
      * 회원 저장 로직
      */
-    public void userSave(UserValue userValue) {
-
+    public Long userSave(UserValue userValue) {
         //이미 저장된 아이디(email) 인지 체크
         emailDuplicateCheck(userValue);
-
         //신규 salt 생성
         String salt = encryption.createSALT();
-
         //패스워드 암호화
         String encryptedPassword = encryption.encrypt(userValue.getPassword(), salt);
+        //userEntity 생성 - 암호화 처리까지된것
+        UserEntity userEntity = createUserEntity(userValue, salt, encryptedPassword);
 
-        UserEntity userEntity = UserEntity.create(
-                userValue.getEmail(),
-                encryptedPassword,
-                salt,
-                userValue.getName(),
-                userValue.getPhoneNumber(),
-                userValue.getUserType());
+        UserEntity entity = userRepository.save(userEntity);
 
-        userRepository.save(userEntity);
+        return entity.getId();
     }
 
-    public UserValue findByUserId(Long id) {
-        UserEntity userEntity = userRepository.findById(id).orElseThrow(
-                () -> new UserException(UserExceptionMessage.USER_NOT_FOUNT)
-        );
+    /**
+     * history 에 저장
+     */
+    public void userStatusHistorySave(Long userId, UserStatus userStatus) {
+        if (userId == null || userStatus == null) {
+            throw new UserException(UserExceptionMessage.HISTORY_SAVE_FAIL);
+        }
+        userStatusHistoryRepository.save(UserStatusHistory.of(userId, userStatus));
+    }
 
-        return convertUserEntityToUserValue(userEntity);
+    /**
+     * user 를 저장하고 그 기록을 history 에 저장
+     */
+    @Transactional
+    public void userSaveAndUserHistorySave(UserValue userValue) {
+        Long userId = userSave(userValue);
+        userStatusHistorySave(userId, UserStatus.ACTIVE);
     }
 
     public UserValue findByUserEmail(String email) {
         UserEntity userEntity = userRepository.findByEmail(email).orElseThrow(
                 () -> new UserException(UserExceptionMessage.USER_NOT_FOUNT)
         );
-
         return convertUserEntityToUserValue(userEntity);
     }
 
+
+    private UserEntity createUserEntity(UserValue userValue, String salt, String encryptedPassword) {
+        return UserEntity.create(
+                userValue.getEmail(),
+                encryptedPassword,
+                salt,
+                userValue.getName(),
+                userValue.getPhoneNumber(),
+                userValue.getUserType());
+    }
 
     /**
      * 규모가 커지고 여러곳에서 사용한다면 converter 등의 사용을 고려해 볼것..

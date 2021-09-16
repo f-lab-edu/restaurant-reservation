@@ -1,19 +1,11 @@
 package com.restaurantreservation.error.exception.user;
 
-import com.restaurantreservation.error.message.user.UserExceptionMessage;
-import lombok.Getter;
+import com.restaurantreservation.error.exception.BaseException;
+import com.restaurantreservation.error.message.BaseExceptionMessage;
 
-public class UserException extends RuntimeException {
+public class UserException extends BaseException {
 
-    @Getter
-    private final UserExceptionMessage userExceptionMessage;
-
-    public static UserException of(UserExceptionMessage userExceptionMessage) {
-        return new UserException(userExceptionMessage);
-    }
-
-    public UserException(UserExceptionMessage userJoinExceptionMessage) {
-        super(userJoinExceptionMessage.getErrorMessage());
-        this.userExceptionMessage = userJoinExceptionMessage;
+    public UserException(BaseExceptionMessage e) {
+        super(e);
     }
 }
