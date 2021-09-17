@@ -27,7 +27,6 @@ public enum UserExceptionMessage implements BaseExceptionMessage {
     // userHistory 에러 메세지
     HISTORY_SAVE_FAIL(500, "회원 history 저장에 실패하였습니다.");
 
-
     private final int code;
     private final String errorMessage;
 

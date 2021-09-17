@@ -30,7 +30,7 @@ public class UserController {
 
         userService.userLogin(userValue);
 
-        return null;
+        return Result.createStatusAndMessage(200, "로그인 성공");
     }
 
 //    @GetMapping("/{id}")

@@ -1,6 +1,7 @@
 package com.restaurantreservation.service;
 
 import com.restaurantreservation.domain.history.UserStatusHistory;
+import com.restaurantreservation.domain.user.LoginAuthEntity;
 import com.restaurantreservation.domain.user.UserEntity;
 import com.restaurantreservation.domain.user.UserStatus;
 import com.restaurantreservation.domain.user.UserValue;
@@ -8,10 +9,14 @@ import com.restaurantreservation.encrypt.Encryption;
 import com.restaurantreservation.error.exception.user.UserException;
 import com.restaurantreservation.error.message.user.UserExceptionMessage;
 import com.restaurantreservation.repository.history.UserStatusHistoryRepository;
+import com.restaurantreservation.repository.user.LoginAuthRepository;
 import com.restaurantreservation.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.servlet.http.Cookie;
+import java.util.UUID;
 
 
 @RequiredArgsConstructor
@@ -21,6 +26,11 @@ public class UserService {
     private final UserRepository userRepository;
     private final Encryption encryption;
     private final UserStatusHistoryRepository userStatusHistoryRepository;
+
+    private final LoginAuthRepository loginAuthRepository;
+
+    private static final Long LOGIN_SESSION_TIME = 5 * 60L;
+    private static final String LOGIN_SESSION_NAME = "login_session";
 
     /**
      * 회원 저장 로직
@@ -66,6 +76,11 @@ public class UserService {
         return convertUserEntityToUserValue(userEntity);
     }
 
+    /**
+     * userlogin 처리 로직
+     * 멀티 스레드 환경일때 어떻게 DB 를 관리 할 지 생각하면서 구현 필요
+     * 로그인 세션 만료 시간, 세션 시간등을 정하는 위치 등을 생각하면서 구현하기
+     */
     public void userLogin(UserValue userValue) {
         UserEntity userEntity = userRepository.findByEmail(userValue.getEmail()).orElseThrow(
                 () -> new UserException(UserExceptionMessage.USER_NOT_FOUNT)
@@ -74,6 +89,12 @@ public class UserService {
         if (!inputPassword.equals(userEntity.getPassword())) {
             throw new UserException(UserExceptionMessage.WRONG_PASSWORD);
         }
+        //로그인 세션 생성 및 저장
+        String loginTokenKey = UUID.randomUUID().toString();
+        loginAuthRepository.save(
+                LoginAuthEntity.create(userEntity.getId(), loginTokenKey, LOGIN_SESSION_TIME)
+        );
+        new Cookie(LOGIN_SESSION_NAME, loginTokenKey);
     }
 
 
