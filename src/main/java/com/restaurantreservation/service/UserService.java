@@ -69,34 +69,42 @@ public class UserService {
         userStatusHistorySave(userId, UserStatus.ACTIVE);
     }
 
-    public UserValue findByUserEmail(String email) {
-        UserEntity userEntity = userRepository.findByEmail(email).orElseThrow(
-                () -> new UserException(UserExceptionMessage.USER_NOT_FOUNT)
-        );
-        return convertUserEntityToUserValue(userEntity);
-    }
-
     /**
      * userlogin 처리 로직
      * 멀티 스레드 환경일때 어떻게 DB 를 관리 할 지 생각하면서 구현 필요
-     * 로그인 세션 만료 시간, 세션 시간등을 정하는 위치 등을 생각하면서 구현하기
      */
     public void userLogin(UserValue userValue) {
-        UserEntity userEntity = userRepository.findByEmail(userValue.getEmail()).orElseThrow(
+        UserEntity userEntity = emailCheck(userValue);
+        passwordCheck(userValue, userEntity.getPassword(), userEntity.getSalt());
+        //로그인 세션 생성 및 저장
+        loginSessionCreateAndSave(userEntity.getId());
+    }
+
+
+    private UserEntity emailCheck(UserValue userValue) {
+        return userRepository.findByEmail(userValue.getEmail()).orElseThrow(
                 () -> new UserException(UserExceptionMessage.USER_NOT_FOUNT)
         );
-        String inputPassword = encryption.encrypt(userValue.getPassword(), userEntity.getSalt());
-        if (!inputPassword.equals(userEntity.getPassword())) {
+    }
+
+    private void passwordCheck(UserValue userValue, String userEntityPassword, String salt) {
+        String inputPassword = encryption.encrypt(userValue.getPassword(), salt);
+        if (!inputPassword.equals(userEntityPassword)) {
             throw new UserException(UserExceptionMessage.WRONG_PASSWORD);
         }
-        //로그인 세션 생성 및 저장
+    }
+
+    /**
+     * 멀티 프로세스 환경에서는 내부의 session 으로는 동기화가 어렵기때문에
+     * 현재는 DB 에 저장해서 확인 - (나중에는 Redis DB 를 사용해 옮길 예정)
+     */
+    private void loginSessionCreateAndSave(Long userId) {
         String loginTokenKey = UUID.randomUUID().toString();
         loginAuthRepository.save(
-                LoginAuthEntity.create(userEntity.getId(), loginTokenKey, LOGIN_SESSION_TIME)
+                LoginAuthEntity.create(userId, loginTokenKey, LOGIN_SESSION_TIME)
         );
         new Cookie(LOGIN_SESSION_NAME, loginTokenKey);
     }
-
 
     private UserEntity createUserEntity(UserValue userValue, String salt, String encryptedPassword) {
         return UserEntity.create(
@@ -106,18 +114,6 @@ public class UserService {
                 userValue.getName(),
                 userValue.getPhoneNumber(),
                 userValue.getUserType());
-    }
-
-    /**
-     * 규모가 커지고 여러곳에서 사용한다면 converter 등의 사용을 고려해 볼것..
-     * 현재는 userService 외에서 사용을 거의 안할 것 같아서 여기서 구현
-     */
-    private UserValue convertUserEntityToUserValue(UserEntity userEntity) {
-        return new UserValue.Builder(userEntity.getEmail())
-                .name(userEntity.getName())
-                .phoneNumber(userEntity.getPhoneNumber())
-                .userType(userEntity.getUserType())
-                .build();
     }
 
     /**
