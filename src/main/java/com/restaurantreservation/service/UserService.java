@@ -66,6 +66,16 @@ public class UserService {
         return convertUserEntityToUserValue(userEntity);
     }
 
+    public void userLogin(UserValue userValue) {
+        UserEntity userEntity = userRepository.findByEmail(userValue.getEmail()).orElseThrow(
+                () -> new UserException(UserExceptionMessage.USER_NOT_FOUNT)
+        );
+        String inputPassword = encryption.encrypt(userValue.getPassword(), userEntity.getSalt());
+        if (!inputPassword.equals(userEntity.getPassword())) {
+            throw new UserException(UserExceptionMessage.WRONG_PASSWORD);
+        }
+    }
+
 
     private UserEntity createUserEntity(UserValue userValue, String salt, String encryptedPassword) {
         return UserEntity.create(

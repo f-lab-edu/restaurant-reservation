@@ -22,9 +22,11 @@ public enum UserExceptionMessage implements BaseExceptionMessage {
     UNKNOWN_FAIL(500, "알 수 없는 오류로 회원 저장에 실패하였습니다."),
     // 로그인 에러 메세지
     USER_NOT_FOUNT(600, "해당 유저가 존재하지 않습니다."),
+    WRONG_PASSWORD(600, "비밀번호가 다릅니다."),
 
     // userHistory 에러 메세지
     HISTORY_SAVE_FAIL(500, "회원 history 저장에 실패하였습니다.");
+
 
     private final int code;
     private final String errorMessage;
