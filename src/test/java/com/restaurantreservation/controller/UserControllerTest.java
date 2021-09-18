@@ -115,6 +115,30 @@ class UserControllerTest {
         );
     }
 
+    /**
+     * 테스트 관련 보완 필요
+     */
+    @Test
+    @DisplayName("로그인 테스트 성공")
+    void canLogin() throws Exception {
+        UserValue getUserValue = new UserValue.Builder("test123@naver.com")
+                .password("1234")
+                .build();
+
+        MockHttpServletResponse getResponse = mvc.perform(
+                post("/user/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonUserValue.write(getUserValue).getJson()
+                        )).andReturn().getResponse();
+
+        assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(getResponse.getContentAsString()).isEqualTo(
+                new ObjectMapper().writeValueAsString(
+                        Result.createErrorResult(200, "로그인 성공")
+                )
+        );
+    }
+
 
     private MockHttpServletResponse getMockHttpServletResponseUserJoin(UserValue getUserValue) throws Exception {
         return mvc.perform(

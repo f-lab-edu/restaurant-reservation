@@ -135,4 +135,11 @@ class UserServiceTest {
         verifyNoMoreInteractions(userStatusHistoryRepository);
     }
 
+//    @Test
+//    @DisplayName("유저 로그인 실패 - 해당 유저가 없음")
+//    void cannotUserLoginNotExistUser(){
+//        UserValue userValue = createUserValue();
+//
+//    }
+
 }
