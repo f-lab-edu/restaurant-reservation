@@ -18,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -75,8 +76,8 @@ class UserServiceTest {
                 userValue.getUserType());
     }
 
-    UserStatusHistory testUserStatusHistory(Long userId, UserStatus userStatus) {
-        return UserStatusHistory.of(userId, userStatus);
+    UserStatusHistory testUserSaveHistory(Long userId) {
+        return UserStatusHistory.of(userId, UserStatus.ACTIVE);
     }
 
     /**
@@ -117,7 +118,7 @@ class UserServiceTest {
     @Test
     @DisplayName("유저 회원가입 시 history 저장 테스트 - 성공")
     void canUserStatusHistorySave() {
-        UserStatusHistory userStatusHistory = testUserStatusHistory(1L, UserStatus.ACTIVE);
+        UserStatusHistory userStatusHistory = testUserSaveHistory(1L);
 
         given(userStatusHistoryRepository.save(any(UserStatusHistory.class))).willReturn(userStatusHistory);
         userJoinService.userStatusHistorySave(userStatusHistory.getUserId(), userStatusHistory.getUserStatus());
@@ -129,7 +130,7 @@ class UserServiceTest {
     @Test
     @DisplayName("유저 회원가입 시 history 저장 테스트 - 실패")
     void cannotUserStatusHistorySave() {
-        UserStatusHistory userStatusHistory = testUserStatusHistory(null, UserStatus.ACTIVE);
+        UserStatusHistory userStatusHistory = testUserSaveHistory(null);
 
         assertThatThrownBy(
                 () -> userJoinService.userStatusHistorySave(userStatusHistory.getUserId(), userStatusHistory.getUserStatus()))
@@ -147,7 +148,7 @@ class UserServiceTest {
         UserValue userValue = createUserValue();
         UserEntity userEntity = testUserEntity(userValue);
         given(userRepository.findByEmail(userValue.getEmail())).willReturn(Optional.ofNullable(userEntity));
-        given(encryption.encrypt(userValue.getPassword(),userEntity.getSalt())).willReturn(password);
+        given(encryption.encrypt(userValue.getPassword(), Objects.requireNonNull(userEntity).getSalt())).willReturn(password);
 
         userJoinService.userLogin(userValue);
 
@@ -168,7 +169,9 @@ class UserServiceTest {
                 .hasMessage(UserExceptionMessage.USER_NOT_FOUNT.getErrorMessage());
 
         verify(userRepository, times(1)).findByEmail(userValue.getEmail());
+        verify(loginAuthRepository, times(0)).save(any());
         verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(loginAuthRepository);
     }
 
     @Test
@@ -177,14 +180,16 @@ class UserServiceTest {
         UserValue userValue = createUserValue();
         UserEntity userEntity = testUserEntity(userValue);
         given(userRepository.findByEmail(userValue.getEmail())).willReturn(Optional.ofNullable(userEntity));
-        given(encryption.encrypt(userValue.getPassword(),userEntity.getSalt())).willReturn(password + "1");
+        given(encryption.encrypt(userValue.getPassword(), Objects.requireNonNull(userEntity).getSalt())).willReturn(password + "1");
 
         assertThatThrownBy(() -> userJoinService.userLogin(userValue))
                 .isInstanceOf(UserException.class)
                 .hasMessage(UserExceptionMessage.WRONG_PASSWORD.getErrorMessage());
 
         verify(userRepository, times(1)).findByEmail(userValue.getEmail());
+        verify(loginAuthRepository, times(0)).save(any());
         verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(loginAuthRepository);
     }
 
 }
