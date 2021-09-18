@@ -32,6 +32,12 @@ public class UserValue {
 //    public static final String PASSWORD_REGEX = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,20}$";
 
 
+    /**
+     * valid check 는 userEntity 로 변환전에 체크해서
+     * check 에 실패하면 빨리 controller 에서
+     * return 하려고 userValue 에서 처리하도록 구현하였습니다.
+     *
+     */
     public static void isValid(UserValue userValue) {
 
         emailPatternCheck(userValue.getEmail());
@@ -41,9 +47,6 @@ public class UserValue {
             throw new UserException(UserExceptionMessage.WRONG_USER_TYPE);
         }
     }
-
-
-
 
     public static void isLoginValid(UserValue userValue) {
         emailPatternCheck(userValue.getEmail());

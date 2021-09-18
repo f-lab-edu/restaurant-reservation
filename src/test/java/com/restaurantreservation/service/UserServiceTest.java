@@ -9,6 +9,7 @@ import com.restaurantreservation.encrypt.Encryption;
 import com.restaurantreservation.error.exception.user.UserException;
 import com.restaurantreservation.error.message.user.UserExceptionMessage;
 import com.restaurantreservation.repository.history.UserStatusHistoryRepository;
+import com.restaurantreservation.repository.user.LoginAuthRepository;
 import com.restaurantreservation.repository.user.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,6 +34,9 @@ import static org.mockito.Mockito.*;
 //Mock 객체를 사용하기 위해 추가
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
+
+    @Mock
+    LoginAuthRepository loginAuthRepository;
 
     @Mock
     UserRepository userRepository;
@@ -135,11 +141,50 @@ class UserServiceTest {
         verifyNoMoreInteractions(userStatusHistoryRepository);
     }
 
-//    @Test
-//    @DisplayName("유저 로그인 실패 - 해당 유저가 없음")
-//    void cannotUserLoginNotExistUser(){
-//        UserValue userValue = createUserValue();
-//
-//    }
+    @Test
+    @DisplayName("유저 로그인 성공")
+    void canUserLogin(){
+        UserValue userValue = createUserValue();
+        UserEntity userEntity = testUserEntity(userValue);
+        given(userRepository.findByEmail(userValue.getEmail())).willReturn(Optional.ofNullable(userEntity));
+        given(encryption.encrypt(userValue.getPassword(),userEntity.getSalt())).willReturn(password);
+
+        userJoinService.userLogin(userValue);
+
+        verify(userRepository, times(1)).findByEmail(userValue.getEmail());
+        verify(loginAuthRepository, times(1)).save(any());
+        verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(loginAuthRepository);
+    }
+
+    @Test
+    @DisplayName("유저 로그인 실패 - 해당 유저가 없음")
+    void cannotUserLoginNotExistUser() {
+        UserValue userValue = createUserValue();
+        given(userRepository.findByEmail(userValue.getEmail())).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userJoinService.userLogin(userValue))
+                .isInstanceOf(UserException.class)
+                .hasMessage(UserExceptionMessage.USER_NOT_FOUNT.getErrorMessage());
+
+        verify(userRepository, times(1)).findByEmail(userValue.getEmail());
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    @DisplayName("유저 로그인 실패 - 비밀번호가 다름")
+    void cannotUserLoginNotCollectPassword(){
+        UserValue userValue = createUserValue();
+        UserEntity userEntity = testUserEntity(userValue);
+        given(userRepository.findByEmail(userValue.getEmail())).willReturn(Optional.ofNullable(userEntity));
+        given(encryption.encrypt(userValue.getPassword(),userEntity.getSalt())).willReturn(password + "1");
+
+        assertThatThrownBy(() -> userJoinService.userLogin(userValue))
+                .isInstanceOf(UserException.class)
+                .hasMessage(UserExceptionMessage.WRONG_PASSWORD.getErrorMessage());
+
+        verify(userRepository, times(1)).findByEmail(userValue.getEmail());
+        verifyNoMoreInteractions(userRepository);
+    }
 
 }
