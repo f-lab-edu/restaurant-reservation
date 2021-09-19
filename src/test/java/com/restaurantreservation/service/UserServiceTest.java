@@ -26,12 +26,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
-/**
- * Repository 부분들에 대한 Test를
- * 어떻게 해야 spring boot, DB 에 의존하지 않고
- * 정확이 Test 할 수 있을지에 대한 고민 후 service 단계 테스트 전면 수정 필요
- */
-
 //Mock 객체를 사용하기 위해 추가
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {

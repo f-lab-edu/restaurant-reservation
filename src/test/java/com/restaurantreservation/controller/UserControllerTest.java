@@ -115,9 +115,6 @@ class UserControllerTest {
         );
     }
 
-    /**
-     * 테스트 관련 보완 필요
-     */
     @Test
     @DisplayName("로그인 테스트 성공")
     void canLogin() throws Exception {

@@ -27,18 +27,11 @@ public class UserController {
 
     @PostMapping("/login")
     public Result userLogin(@RequestBody UserValue userValue) {
-
         //login valid check
         UserValue.isLoginValid(userValue);
         userService.userLogin(userValue);
 
         return Result.createStatusAndMessage(200, "로그인 성공");
     }
-
-//    @GetMapping("/{id}")
-//    public ResponseEntity<? extends BaseResponse> userFind(@PathVariable Long id) {
-//        UserValue getUserValue = userService.findByUserId(id);
-//    }
-
 
 }

@@ -36,7 +36,6 @@ public class UserValue {
      * valid check 는 userEntity 로 변환전에 체크해서
      * check 에 실패하면 빨리 controller 에서
      * return 하려고 userValue 에서 처리하도록 구현하였습니다.
-     *
      */
     public static void isValid(UserValue userValue) {
 
