@@ -73,6 +73,7 @@ public class UserService {
      * userlogin 처리 로직
      * 멀티 스레드 환경일때 어떻게 DB 를 관리 할 지 생각하면서 구현 필요
      */
+    // 메서드 앞을 동사로
     public void userLogin(UserValue userValue) {
         UserEntity userEntity = emailCheck(userValue);
         passwordCheck(userValue, userEntity.getPassword(), userEntity.getSalt());
@@ -104,6 +105,11 @@ public class UserService {
                 LoginAuthEntity.create(userId, loginTokenKey, LOGIN_SESSION_TIME)
         );
         new Cookie(LOGIN_SESSION_NAME, loginTokenKey);
+
+        //토큰을 직접 내려주고 expire 시간으로 관리하는 방향으로 찾아서 바꾸어 보자.
+
+        //access 토큰  - 모든 인증은 여기서
+        //refresh 토큰 - access 토큰을 발급받기 위한 토큰 >> 찾아서 바꿔볼 것
     }
 
     private UserEntity createUserEntity(UserValue userValue, String salt, String encryptedPassword) {

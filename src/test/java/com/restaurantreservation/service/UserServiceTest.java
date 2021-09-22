@@ -186,4 +186,7 @@ class UserServiceTest {
         verifyNoMoreInteractions(loginAuthRepository);
     }
 
+    //유닛 테스트 - 자바 로직이 잘 돌아가는지 확인하는 테스트 - 누가 리펙토링해도 안정적이게 + 빠른 피드백
+    // 인테그레이션 테스트 - 전체 테스트 개념 - 전체 테스트 관련도 작성 필요
+
 }
