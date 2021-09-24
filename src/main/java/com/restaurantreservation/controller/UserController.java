@@ -3,10 +3,7 @@ package com.restaurantreservation.controller;
 import com.restaurantreservation.domain.user.UserValue;
 import com.restaurantreservation.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,4 +31,8 @@ public class UserController {
         return Result.createStatusAndMessage(200, "로그인 성공");
     }
 
+    @GetMapping("/health-check")
+    public String healthCheck(){
+        return "health_ok";
+    }
 }
