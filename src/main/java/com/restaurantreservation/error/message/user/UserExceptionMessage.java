@@ -25,7 +25,10 @@ public enum UserExceptionMessage implements BaseExceptionMessage {
     WRONG_PASSWORD(600, "비밀번호가 다릅니다."),
 
     // userHistory 에러 메세지
-    HISTORY_SAVE_FAIL(500, "회원 history 저장에 실패하였습니다.");
+    HISTORY_SAVE_FAIL(500, "회원 history 저장에 실패하였습니다."),
+
+    // 로그인 체크 에러 메세지
+    NEED_LOGIN(606, "로그인이 필요합니다.");
 
     private final int code;
     private final String errorMessage;

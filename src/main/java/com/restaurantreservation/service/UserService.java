@@ -16,6 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import java.net.http.HttpRequest;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 
@@ -74,11 +78,52 @@ public class UserService {
      * 멀티 스레드 환경일때 어떻게 DB 를 관리 할 지 생각하면서 구현 필요
      */
     // 메서드 앞을 동사로
-    public void userLogin(UserValue userValue) {
+    public void loginUser(UserValue userValue) {
         UserEntity userEntity = emailCheck(userValue);
         passwordCheck(userValue, userEntity.getPassword(), userEntity.getSalt());
         //로그인 세션 생성 및 저장
         loginSessionCreateAndSave(userEntity.getId());
+    }
+
+    //현재 cookie 로 처리 >> 나중에 token 으로 변경 필요
+    public void checkLogin(HttpServletRequest request) {
+        String loginAuthKey = getLoginAuthKey(request);
+
+        LoginAuthEntity loginAuthEntity = loginAuthRepository.findByAuthTokenKey(loginAuthKey).orElseThrow(
+                () -> new UserException(UserExceptionMessage.NEED_LOGIN)
+        );
+
+        loginAuthTimeCheck(loginAuthEntity);
+
+        //세션 하고 있으면 통과시키는데 만료 시간 갱신
+        LoginAuthEntity updateLoginAuthEntity = LoginAuthEntity.updateExpireDate(loginAuthEntity, LOGIN_SESSION_TIME);
+        loginAuthRepository.save(updateLoginAuthEntity);
+    }
+
+    private void loginAuthTimeCheck(LoginAuthEntity loginAuthEntity) {
+
+        long sessionInterval = Duration.between(loginAuthEntity.getExpireDate(), LocalDateTime.now()).getSeconds();
+
+        if (sessionInterval > LOGIN_SESSION_TIME) {
+            loginAuthRepository.deleteById(loginAuthEntity.getId());
+            //세션 만료
+            throw new UserException(UserExceptionMessage.NEED_LOGIN);
+        }
+    }
+
+    private String getLoginAuthKey(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        Cookie getCookie = null;
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(LOGIN_SESSION_NAME)) {
+                getCookie = cookie;
+            }
+        }
+        if (getCookie == null) {
+            throw new UserException(UserExceptionMessage.NEED_LOGIN);
+        }
+
+        return getCookie.getValue();
     }
 
 

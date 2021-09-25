@@ -26,7 +26,7 @@ public class UserController {
     public Result userLogin(@RequestBody UserValue userValue) {
         //login valid check
         UserValue.isLoginValid(userValue);
-        userService.userLogin(userValue);
+        userService.loginUser(userValue);
 
         return Result.createStatusAndMessage(200, "로그인 성공");
     }

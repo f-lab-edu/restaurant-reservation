@@ -144,7 +144,7 @@ class UserServiceTest {
         given(userRepository.findByEmail(userValue.getEmail())).willReturn(Optional.ofNullable(userEntity));
         given(encryption.encrypt(userValue.getPassword(), Objects.requireNonNull(userEntity).getSalt())).willReturn(password);
 
-        userJoinService.userLogin(userValue);
+        userJoinService.loginUser(userValue);
 
         verify(userRepository, times(1)).findByEmail(userValue.getEmail());
         verify(loginAuthRepository, times(1)).save(any());
@@ -158,7 +158,7 @@ class UserServiceTest {
         UserValue userValue = createUserValue();
         given(userRepository.findByEmail(userValue.getEmail())).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> userJoinService.userLogin(userValue))
+        assertThatThrownBy(() -> userJoinService.loginUser(userValue))
                 .isInstanceOf(UserException.class)
                 .hasMessage(UserExceptionMessage.USER_NOT_FOUNT.getErrorMessage());
 
@@ -176,7 +176,7 @@ class UserServiceTest {
         given(userRepository.findByEmail(userValue.getEmail())).willReturn(Optional.ofNullable(userEntity));
         given(encryption.encrypt(userValue.getPassword(), Objects.requireNonNull(userEntity).getSalt())).willReturn(password + "1");
 
-        assertThatThrownBy(() -> userJoinService.userLogin(userValue))
+        assertThatThrownBy(() -> userJoinService.loginUser(userValue))
                 .isInstanceOf(UserException.class)
                 .hasMessage(UserExceptionMessage.WRONG_PASSWORD.getErrorMessage());
 
