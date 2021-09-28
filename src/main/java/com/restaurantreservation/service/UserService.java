@@ -1,6 +1,7 @@
 package com.restaurantreservation.service;
 
 import com.restaurantreservation.domain.history.UserStatusHistory;
+import com.restaurantreservation.domain.user.LoginAuthEntity;
 import com.restaurantreservation.domain.user.UserEntity;
 import com.restaurantreservation.domain.user.UserStatus;
 import com.restaurantreservation.domain.user.UserValue;
@@ -8,10 +9,14 @@ import com.restaurantreservation.encrypt.Encryption;
 import com.restaurantreservation.error.exception.user.UserException;
 import com.restaurantreservation.error.message.user.UserExceptionMessage;
 import com.restaurantreservation.repository.history.UserStatusHistoryRepository;
+import com.restaurantreservation.repository.user.LoginAuthRepository;
 import com.restaurantreservation.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.servlet.http.Cookie;
+import java.util.UUID;
 
 
 @RequiredArgsConstructor
@@ -21,6 +26,11 @@ public class UserService {
     private final UserRepository userRepository;
     private final Encryption encryption;
     private final UserStatusHistoryRepository userStatusHistoryRepository;
+
+    private final LoginAuthRepository loginAuthRepository;
+
+    private static final Long LOGIN_SESSION_TIME = 5 * 60L;
+    private static final String LOGIN_SESSION_NAME = "login_session";
 
     /**
      * 회원 저장 로직
@@ -59,13 +69,42 @@ public class UserService {
         userStatusHistorySave(userId, UserStatus.ACTIVE);
     }
 
-    public UserValue findByUserEmail(String email) {
-        UserEntity userEntity = userRepository.findByEmail(email).orElseThrow(
-                () -> new UserException(UserExceptionMessage.USER_NOT_FOUNT)
-        );
-        return convertUserEntityToUserValue(userEntity);
+    /**
+     * userlogin 처리 로직
+     * 멀티 스레드 환경일때 어떻게 DB 를 관리 할 지 생각하면서 구현 필요
+     */
+    public void userLogin(UserValue userValue) {
+        UserEntity userEntity = emailCheck(userValue);
+        passwordCheck(userValue, userEntity.getPassword(), userEntity.getSalt());
+        //로그인 세션 생성 및 저장
+        loginSessionCreateAndSave(userEntity.getId());
     }
 
+
+    private UserEntity emailCheck(UserValue userValue) {
+        return userRepository.findByEmail(userValue.getEmail()).orElseThrow(
+                () -> new UserException(UserExceptionMessage.USER_NOT_FOUNT)
+        );
+    }
+
+    private void passwordCheck(UserValue userValue, String userEntityPassword, String salt) {
+        String inputPassword = encryption.encrypt(userValue.getPassword(), salt);
+        if (!inputPassword.equals(userEntityPassword)) {
+            throw new UserException(UserExceptionMessage.WRONG_PASSWORD);
+        }
+    }
+
+    /**
+     * 멀티 프로세스 환경에서는 내부의 session 으로는 동기화가 어렵기때문에
+     * 현재는 DB 에 저장해서 확인 - (나중에는 Redis DB 를 사용해 옮길 예정)
+     */
+    private void loginSessionCreateAndSave(Long userId) {
+        String loginTokenKey = UUID.randomUUID().toString();
+        loginAuthRepository.save(
+                LoginAuthEntity.create(userId, loginTokenKey, LOGIN_SESSION_TIME)
+        );
+        new Cookie(LOGIN_SESSION_NAME, loginTokenKey);
+    }
 
     private UserEntity createUserEntity(UserValue userValue, String salt, String encryptedPassword) {
         return UserEntity.create(
@@ -75,18 +114,6 @@ public class UserService {
                 userValue.getName(),
                 userValue.getPhoneNumber(),
                 userValue.getUserType());
-    }
-
-    /**
-     * 규모가 커지고 여러곳에서 사용한다면 converter 등의 사용을 고려해 볼것..
-     * 현재는 userService 외에서 사용을 거의 안할 것 같아서 여기서 구현
-     */
-    private UserValue convertUserEntityToUserValue(UserEntity userEntity) {
-        return new UserValue.Builder(userEntity.getEmail())
-                .name(userEntity.getName())
-                .phoneNumber(userEntity.getPhoneNumber())
-                .userType(userEntity.getUserType())
-                .build();
     }
 
     /**

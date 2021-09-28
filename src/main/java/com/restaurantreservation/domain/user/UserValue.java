@@ -32,27 +32,48 @@ public class UserValue {
 //    public static final String PASSWORD_REGEX = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,20}$";
 
 
+    /**
+     * valid check 는 userEntity 로 변환전에 체크해서
+     * check 에 실패하면 빨리 controller 에서
+     * return 하려고 userValue 에서 처리하도록 구현하였습니다.
+     */
     public static void isValid(UserValue userValue) {
 
-        boolean emailRegexCheck = Pattern.compile(EMAIL_REGEX)
-                .matcher(userValue.getEmail())
-                .matches();
+        emailPatternCheck(userValue.getEmail());
+        passwordPatternCheck(userValue.getPassword());
 
-//        boolean passwordRegexCheck = Pattern.compile(PASSWORD_REGEX)
-//                .matcher(userValue.getPassword())
-//                .matches();
-
-        if (!emailRegexCheck) {
-            throw new UserException(UserExceptionMessage.WRONG_EMAIL);
-        }
-//        if (!passwordRegexCheck) {
-//            throw new UserJoinException(UserJoinExceptionMessage.WRONG_PASSWORD_FORM);
-//        }
         if (userValue.getUserType() == null) {
             throw new UserException(UserExceptionMessage.WRONG_USER_TYPE);
         }
     }
 
+    public static void isLoginValid(UserValue userValue) {
+        emailPatternCheck(userValue.getEmail());
+        passwordPatternCheck(userValue.getPassword());
+    }
+
+    private static void emailPatternCheck(String email) {
+        boolean emailRegexCheck = Pattern.compile(EMAIL_REGEX)
+                .matcher(email)
+                .matches();
+
+        if (!emailRegexCheck) {
+            throw new UserException(UserExceptionMessage.WRONG_EMAIL);
+        }
+    }
+
+    private static void passwordPatternCheck(String password) {
+//        boolean passwordRegexCheck = Pattern.compile(PASSWORD_REGEX)
+//                .matcher(password)
+//                .matches();
+//
+//        if (!passwordRegexCheck) {
+//            throw new UserException(UserExceptionMessage.WRONG_PASSWORD_FORM);
+//        }
+        if (password == null) {
+            throw new UserException(UserExceptionMessage.WRONG_PASSWORD_FORM);
+        }
+    }
 
     /**
      * 필수값 email, 나머지는 선택값으로 builder 구현
@@ -103,6 +124,17 @@ public class UserValue {
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.userType = userType;
+    }
+
+    @Override
+    public String toString() {
+        return "UserValue{" +
+                "email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", name='" + name + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", userType=" + userType +
+                '}';
     }
 }
 

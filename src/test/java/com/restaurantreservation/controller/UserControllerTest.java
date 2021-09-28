@@ -115,6 +115,51 @@ class UserControllerTest {
         );
     }
 
+    @Test
+    @DisplayName("로그인 테스트 성공")
+    void canLogin() throws Exception {
+        UserValue getUserValue = new UserValue.Builder("test123@naver.com")
+                .password("1234")
+                .build();
+
+        MockHttpServletResponse getResponse = mvc.perform(
+                post("/user/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonUserValue.write(getUserValue).getJson()
+                        )).andReturn().getResponse();
+
+        assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(getResponse.getContentAsString()).isEqualTo(
+                new ObjectMapper().writeValueAsString(
+                        Result.createStatusAndMessage(200, "로그인 성공")
+                )
+        );
+    }
+
+    @Test
+    @DisplayName("로그인 테스트 실패 - valid check 실패")
+    void cannotLoginValidCheck() throws Exception {
+        UserValue getUserValue = new UserValue.Builder("test123")
+                .password("1234")
+                .build();
+
+        MockHttpServletResponse getResponse = mvc.perform(
+                post("/user/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonUserValue.write(getUserValue).getJson()
+                        )).andReturn().getResponse();
+
+        assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(getResponse.getContentAsString()).isEqualTo(
+                new ObjectMapper().writeValueAsString(
+                        Result.createErrorResult(
+                                UserExceptionMessage.WRONG_EMAIL.getCode(),
+                                UserExceptionMessage.WRONG_EMAIL.getErrorMessage()
+                        )
+                )
+        );
+    }
+
 
     private MockHttpServletResponse getMockHttpServletResponseUserJoin(UserValue getUserValue) throws Exception {
         return mvc.perform(

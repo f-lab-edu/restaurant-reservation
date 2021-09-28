@@ -9,6 +9,7 @@ import com.restaurantreservation.encrypt.Encryption;
 import com.restaurantreservation.error.exception.user.UserException;
 import com.restaurantreservation.error.message.user.UserExceptionMessage;
 import com.restaurantreservation.repository.history.UserStatusHistoryRepository;
+import com.restaurantreservation.repository.user.LoginAuthRepository;
 import com.restaurantreservation.repository.user.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,20 +18,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Objects;
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
-/**
- * Repository 부분들에 대한 Test를
- * 어떻게 해야 spring boot, DB 에 의존하지 않고
- * 정확이 Test 할 수 있을지에 대한 고민 후 service 단계 테스트 전면 수정 필요
- */
-
 //Mock 객체를 사용하기 위해 추가
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
+
+    @Mock
+    LoginAuthRepository loginAuthRepository;
 
     @Mock
     UserRepository userRepository;
@@ -69,8 +70,8 @@ class UserServiceTest {
                 userValue.getUserType());
     }
 
-    UserStatusHistory testUserStatusHistory(Long userId, UserStatus userStatus) {
-        return UserStatusHistory.of(userId, userStatus);
+    UserStatusHistory testUserSaveHistory(Long userId) {
+        return UserStatusHistory.of(userId, UserStatus.ACTIVE);
     }
 
     /**
@@ -111,7 +112,7 @@ class UserServiceTest {
     @Test
     @DisplayName("유저 회원가입 시 history 저장 테스트 - 성공")
     void canUserStatusHistorySave() {
-        UserStatusHistory userStatusHistory = testUserStatusHistory(1L, UserStatus.ACTIVE);
+        UserStatusHistory userStatusHistory = testUserSaveHistory(1L);
 
         given(userStatusHistoryRepository.save(any(UserStatusHistory.class))).willReturn(userStatusHistory);
         userJoinService.userStatusHistorySave(userStatusHistory.getUserId(), userStatusHistory.getUserStatus());
@@ -123,7 +124,7 @@ class UserServiceTest {
     @Test
     @DisplayName("유저 회원가입 시 history 저장 테스트 - 실패")
     void cannotUserStatusHistorySave() {
-        UserStatusHistory userStatusHistory = testUserStatusHistory(null, UserStatus.ACTIVE);
+        UserStatusHistory userStatusHistory = testUserSaveHistory(null);
 
         assertThatThrownBy(
                 () -> userJoinService.userStatusHistorySave(userStatusHistory.getUserId(), userStatusHistory.getUserStatus()))
@@ -133,6 +134,56 @@ class UserServiceTest {
         // 문제가 있을 때, save 되면 안되서 확인
         verify(userStatusHistoryRepository, times(0)).save(any(UserStatusHistory.class));
         verifyNoMoreInteractions(userStatusHistoryRepository);
+    }
+
+    @Test
+    @DisplayName("유저 로그인 성공")
+    void canUserLogin(){
+        UserValue userValue = createUserValue();
+        UserEntity userEntity = testUserEntity(userValue);
+        given(userRepository.findByEmail(userValue.getEmail())).willReturn(Optional.ofNullable(userEntity));
+        given(encryption.encrypt(userValue.getPassword(), Objects.requireNonNull(userEntity).getSalt())).willReturn(password);
+
+        userJoinService.userLogin(userValue);
+
+        verify(userRepository, times(1)).findByEmail(userValue.getEmail());
+        verify(loginAuthRepository, times(1)).save(any());
+        verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(loginAuthRepository);
+    }
+
+    @Test
+    @DisplayName("유저 로그인 실패 - 해당 유저가 없음")
+    void cannotUserLoginNotExistUser() {
+        UserValue userValue = createUserValue();
+        given(userRepository.findByEmail(userValue.getEmail())).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userJoinService.userLogin(userValue))
+                .isInstanceOf(UserException.class)
+                .hasMessage(UserExceptionMessage.USER_NOT_FOUNT.getErrorMessage());
+
+        verify(userRepository, times(1)).findByEmail(userValue.getEmail());
+        verify(loginAuthRepository, times(0)).save(any());
+        verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(loginAuthRepository);
+    }
+
+    @Test
+    @DisplayName("유저 로그인 실패 - 비밀번호가 다름")
+    void cannotUserLoginNotCollectPassword(){
+        UserValue userValue = createUserValue();
+        UserEntity userEntity = testUserEntity(userValue);
+        given(userRepository.findByEmail(userValue.getEmail())).willReturn(Optional.ofNullable(userEntity));
+        given(encryption.encrypt(userValue.getPassword(), Objects.requireNonNull(userEntity).getSalt())).willReturn(password + "1");
+
+        assertThatThrownBy(() -> userJoinService.userLogin(userValue))
+                .isInstanceOf(UserException.class)
+                .hasMessage(UserExceptionMessage.WRONG_PASSWORD.getErrorMessage());
+
+        verify(userRepository, times(1)).findByEmail(userValue.getEmail());
+        verify(loginAuthRepository, times(0)).save(any());
+        verifyNoMoreInteractions(userRepository);
+        verifyNoMoreInteractions(loginAuthRepository);
     }
 
 }
