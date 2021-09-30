@@ -1,5 +1,6 @@
 package com.restaurantreservation.config.interceptor;
 
+import com.restaurantreservation.service.UserAuthService;
 import com.restaurantreservation.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 public class LoginInterceptor implements HandlerInterceptor {
 
     private final UserService userService;
+    private final UserAuthService userAuthService;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {

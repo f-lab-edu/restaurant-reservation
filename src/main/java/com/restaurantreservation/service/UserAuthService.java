@@ -32,5 +32,7 @@ public class UserAuthService {
                 .compact();
     }
 
+    public void validToken(String token){
 
+    }
 }
