@@ -13,12 +13,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class InterceptorConfig implements WebMvcConfigurer {
 
     private final UserService userService;
-    private final UserAuthService userAuthService;
 
     // login-check 에서만 확인하도록 일단 설정
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new LoginInterceptor(userService, userAuthService))
+        registry.addInterceptor(new LoginInterceptor(userService))
                 .order(1)
                 .addPathPatterns("/login-check")
                 .excludePathPatterns("/", "/user/login", "/user/logout")

@@ -5,6 +5,7 @@ import com.restaurantreservation.domain.user.UserEntity;
 import com.restaurantreservation.domain.user.UserStatus;
 import com.restaurantreservation.domain.user.UserType;
 import com.restaurantreservation.domain.user.UserValue;
+import com.restaurantreservation.domain.user.login.JwtTokenProvider;
 import com.restaurantreservation.encrypt.Encryption;
 import com.restaurantreservation.error.exception.user.UserException;
 import com.restaurantreservation.error.message.user.UserExceptionMessage;
@@ -29,6 +30,9 @@ import static org.mockito.Mockito.*;
 //Mock 객체를 사용하기 위해 추가
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
+
+    @Mock
+    JwtTokenProvider jwtTokenProvider;
 
     @Mock
     LoginAuthRepository loginAuthRepository;

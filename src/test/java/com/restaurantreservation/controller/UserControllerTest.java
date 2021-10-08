@@ -3,6 +3,7 @@ package com.restaurantreservation.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.restaurantreservation.domain.user.UserType;
 import com.restaurantreservation.domain.user.UserValue;
+import com.restaurantreservation.domain.user.login.JwtTokenProvider;
 import com.restaurantreservation.error.exHandler.CommonExceptionHandler;
 import com.restaurantreservation.error.message.user.UserExceptionMessage;
 import com.restaurantreservation.service.UserService;
@@ -28,6 +29,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 class UserControllerTest {
 
     private MockMvc mvc;
+
+    @Mock
+    private JwtTokenProvider jwtTokenProvider;
 
     @Mock
     private UserService userService;

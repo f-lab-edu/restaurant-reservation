@@ -17,12 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.UUID;
 
 
 @RequiredArgsConstructor
@@ -36,7 +31,9 @@ public class UserService {
     private final LoginAuthRepository loginAuthRepository;
 
     private static final Long TOKEN_EXPIRED_TERM = 5 * 60L;
-    private static final String LOGIN_SESSION_NAME = "login_session";
+
+    private static final String ACCESS_TOKEN_NAME = String.valueOf(JwtType.ACCESS_TOKEN);
+    private static final String REFRESH_TOKEN_NAME = String.valueOf(JwtType.REFRESH_TOKEN);
 
     /**
      * 회원 저장 로직
@@ -78,69 +75,33 @@ public class UserService {
     /**
      * userlogin 처리 로직
      * 멀티 스레드 환경일때 어떻게 로그인 상태를 관리 할 지 생각하면서 구현 필요
+     *
+     * 로그인 성공하면 AccessToken, RefreshToken 생성 후 넘겨줌
      */
-    // 메서드 앞을 동사로
     public HashMap<String, String> loginUser(UserValue userValue) {
         UserEntity userEntity = emailCheck(userValue);
         passwordCheck(userValue, userEntity.getPassword(), userEntity.getSalt());
+        //확인, 통과
 
         // Access token 및 refresh token 생성
         String accessToken = JwtTokenProvider.createJwtToken(userEntity.getId(), userEntity.getEmail(), JwtType.ACCESS_TOKEN);
         String refreshToken = JwtTokenProvider.createJwtToken(userEntity.getId(), userEntity.getEmail(), JwtType.REFRESH_TOKEN);
 
-        /**
-         * refresh token 은 DB 에 저장
-         */
+        //  refresh token 은 DB 에 저장
         LoginAuthEntity loginAuthEntity = LoginAuthEntity.create(userEntity.getId(), refreshToken, TOKEN_EXPIRED_TERM);
         loginAuthRepository.save(loginAuthEntity);
 
         HashMap<String, String> tokensMap = new HashMap<>();
 
-        tokensMap.put("access_token", accessToken);
-        tokensMap.put("refresh_token", refreshToken);
+        tokensMap.put(ACCESS_TOKEN_NAME, accessToken);
+        tokensMap.put(REFRESH_TOKEN_NAME, refreshToken);
 
         return tokensMap;
     }
 
-    //현재 cookie 로 처리 >> 나중에 token 으로 변경 필요
-    public void checkLogin(HttpServletRequest request) {
-        String loginAuthKey = getLoginAuthKey(request);
-
-        LoginAuthEntity loginAuthEntity = loginAuthRepository.findByAuthTokenKey(loginAuthKey).orElseThrow(
-                () -> new UserException(UserExceptionMessage.NEED_LOGIN)
-        );
-
-        loginAuthTimeCheck(loginAuthEntity);
-
-        //세션 하고 있으면 통과시키는데 만료 시간 갱신
-        LoginAuthEntity updateLoginAuthEntity = LoginAuthEntity.updateExpireDate(loginAuthEntity, TOKEN_EXPIRED_TERM);
-        loginAuthRepository.save(updateLoginAuthEntity);
-    }
-
-    private void loginAuthTimeCheck(LoginAuthEntity loginAuthEntity) {
-
-        long sessionInterval = Duration.between(loginAuthEntity.getExpireDate(), LocalDateTime.now()).getSeconds();
-
-        if (sessionInterval > TOKEN_EXPIRED_TERM) {
-            loginAuthRepository.deleteById(loginAuthEntity.getId());
-            //세션 만료
-            throw new UserException(UserExceptionMessage.NEED_LOGIN);
-        }
-    }
-
-    private String getLoginAuthKey(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        Cookie getCookie = null;
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(LOGIN_SESSION_NAME)) {
-                getCookie = cookie;
-            }
-        }
-        if (getCookie == null) {
-            throw new UserException(UserExceptionMessage.NEED_LOGIN);
-        }
-
-        return getCookie.getValue();
+    //나중에 token 으로 변경 필요
+    public void checkAccessToken(String accessToken) {
+        JwtTokenProvider.isValidToken(accessToken, JwtType.ACCESS_TOKEN);
     }
 
 
@@ -155,23 +116,6 @@ public class UserService {
         if (!inputPassword.equals(userEntityPassword)) {
             throw new UserException(UserExceptionMessage.WRONG_PASSWORD);
         }
-    }
-
-    /**
-     * 멀티 프로세스 환경에서는 내부의 session 으로는 동기화가 어렵기때문에
-     * 현재는 DB 에 저장해서 확인 - (나중에는 Redis DB 를 사용해 옮길 예정)
-     */
-    private void loginSessionCreateAndSave(Long userId) {
-        String loginTokenKey = UUID.randomUUID().toString();
-        loginAuthRepository.save(
-                LoginAuthEntity.create(userId, loginTokenKey, TOKEN_EXPIRED_TERM)
-        );
-        new Cookie(LOGIN_SESSION_NAME, loginTokenKey);
-
-        //토큰을 직접 내려주고 expire 시간으로 관리하는 방향으로 찾아서 바꾸어 보자.
-
-        //access 토큰  - 모든 인증은 여기서
-        //refresh 토큰 - access 토큰을 발급받기 위한 토큰 >> 찾아서 바꿔볼 것
     }
 
     private UserEntity createUserEntity(UserValue userValue, String salt, String encryptedPassword) {

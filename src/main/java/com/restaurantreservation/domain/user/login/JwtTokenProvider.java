@@ -36,7 +36,11 @@ public class JwtTokenProvider {
                 .signWith(SignatureAlgorithm.HS256, createSigningKey(key))
                 .compact();
     }
-
+    /**
+     * 유효한 토큰인지 확인하는 로직
+     * 만약 ExpiredJwtException 이 터질 경우
+     * 프론트 쪽에서 RefreshToken 으로 다시 AccessToken 을 만들어 달라고 요청을 해야 한다.
+     */
     public static void isValidToken(String token, JwtType jwtType) {
 
         try {
@@ -44,9 +48,7 @@ public class JwtTokenProvider {
             log.info("Access expireTime: {}", claimsFormToken.getExpiration());
             log.info("Access userId: {}", claimsFormToken.get("userId"));
         } catch (ExpiredJwtException e) {
-            /**
-             * 이 경우에 이 값을 return 하면 프론트에서 refresh token 을 넣을채로 access token 을 발금해달라고 요청해야 한다.
-             */
+
             throw new UserException(JWTTokenExceptionMessage.EXPIRED);
         } catch (MalformedJwtException e) {
             throw new UserException(JWTTokenExceptionMessage.MALFORMED);
