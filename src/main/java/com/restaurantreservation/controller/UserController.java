@@ -19,7 +19,6 @@ public class UserController {
         userService.userSaveAndUserHistorySave(userValue);
 
         return Result.createStatus(201);
-
     }
 
     @PostMapping("/login")
