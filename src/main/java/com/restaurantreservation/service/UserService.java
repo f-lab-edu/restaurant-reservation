@@ -32,8 +32,8 @@ public class UserService {
 
     private static final Long TOKEN_EXPIRED_TERM = 5 * 60L;
 
-    private static final String ACCESS_TOKEN_NAME = String.valueOf(JwtType.ACCESS_TOKEN);
-    private static final String REFRESH_TOKEN_NAME = String.valueOf(JwtType.REFRESH_TOKEN);
+    private static final String ACCESS_TOKEN_NAME = JwtType.ACCESS_TOKEN.name();
+    private static final String REFRESH_TOKEN_NAME = JwtType.REFRESH_TOKEN.name();
 
     /**
      * 회원 저장 로직

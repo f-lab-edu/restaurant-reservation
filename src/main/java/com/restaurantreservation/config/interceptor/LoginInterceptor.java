@@ -19,7 +19,7 @@ public class LoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         log.info("loginInterceptor 실행 {}", request);
 
-        String accessToken = request.getHeader(String.valueOf(JwtType.ACCESS_TOKEN));
+        String accessToken = request.getHeader(JwtType.ACCESS_TOKEN.name());
         if (accessToken != null) {
             userService.checkAccessToken(accessToken);
         }

@@ -65,7 +65,8 @@ class UserServiceTest {
     }
 
     UserEntity testUserEntity(UserValue userValue) {
-        return UserEntity.create(
+        return UserEntity.createTest(
+                1L,
                 userValue.getEmail(),
                 password,
                 salt,

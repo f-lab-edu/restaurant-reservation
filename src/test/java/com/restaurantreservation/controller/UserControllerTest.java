@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.restaurantreservation.domain.user.UserType;
 import com.restaurantreservation.domain.user.UserValue;
 import com.restaurantreservation.domain.user.login.JwtTokenProvider;
+import com.restaurantreservation.domain.user.login.JwtType;
 import com.restaurantreservation.error.exHandler.CommonExceptionHandler;
 import com.restaurantreservation.error.message.user.UserExceptionMessage;
 import com.restaurantreservation.service.UserService;
@@ -22,7 +23,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
+import java.util.HashMap;
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @ExtendWith(MockitoExtension.class)
@@ -125,6 +131,15 @@ class UserControllerTest {
         UserValue getUserValue = new UserValue.Builder("test123@naver.com")
                 .password("1234")
                 .build();
+        HashMap<String, String> tokensMap = new HashMap<>();
+        String accessToken = "new access token";
+        String refreshToken = "new refresh token";
+
+        tokensMap.put(JwtType.ACCESS_TOKEN.name(), accessToken);
+        tokensMap.put(JwtType.REFRESH_TOKEN.name(), refreshToken);
+
+        given(userService.loginUser(any())).willReturn(tokensMap);
+
 
         MockHttpServletResponse getResponse = mvc.perform(
                 post("/user/login")
@@ -135,7 +150,7 @@ class UserControllerTest {
         assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(getResponse.getContentAsString()).isEqualTo(
                 new ObjectMapper().writeValueAsString(
-                        Result.createStatusAndMessage(200, "로그인 성공")
+                        Result.createAll(200, "로그인 성공", tokensMap)
                 )
         );
     }
