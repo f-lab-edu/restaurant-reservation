@@ -5,6 +5,8 @@ import com.restaurantreservation.domain.user.LoginAuthEntity;
 import com.restaurantreservation.domain.user.UserEntity;
 import com.restaurantreservation.domain.user.UserStatus;
 import com.restaurantreservation.domain.user.UserValue;
+import com.restaurantreservation.domain.user.login.JwtTokenProvider;
+import com.restaurantreservation.domain.user.login.JwtType;
 import com.restaurantreservation.encrypt.Encryption;
 import com.restaurantreservation.error.exception.user.UserException;
 import com.restaurantreservation.error.message.user.UserExceptionMessage;
@@ -17,9 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.UUID;
 
 
@@ -33,7 +35,7 @@ public class UserService {
 
     private final LoginAuthRepository loginAuthRepository;
 
-    private static final Long LOGIN_SESSION_TIME = 5 * 60L;
+    private static final Long TOKEN_EXPIRED_TERM = 5 * 60L;
     private static final String LOGIN_SESSION_NAME = "login_session";
 
     /**
@@ -75,14 +77,29 @@ public class UserService {
 
     /**
      * userlogin 처리 로직
-     * 멀티 스레드 환경일때 어떻게 DB 를 관리 할 지 생각하면서 구현 필요
+     * 멀티 스레드 환경일때 어떻게 로그인 상태를 관리 할 지 생각하면서 구현 필요
      */
     // 메서드 앞을 동사로
-    public void loginUser(UserValue userValue) {
+    public HashMap<String, String> loginUser(UserValue userValue) {
         UserEntity userEntity = emailCheck(userValue);
         passwordCheck(userValue, userEntity.getPassword(), userEntity.getSalt());
-        //로그인 세션 생성 및 저장
-        loginSessionCreateAndSave(userEntity.getId());
+
+        // Access token 및 refresh token 생성
+        String accessToken = JwtTokenProvider.createJwtToken(userEntity.getId(), userEntity.getEmail(), JwtType.ACCESS_TOKEN);
+        String refreshToken = JwtTokenProvider.createJwtToken(userEntity.getId(), userEntity.getEmail(), JwtType.REFRESH_TOKEN);
+
+        /**
+         * refresh token 은 DB 에 저장
+         */
+        LoginAuthEntity loginAuthEntity = LoginAuthEntity.create(userEntity.getId(), refreshToken, TOKEN_EXPIRED_TERM);
+        loginAuthRepository.save(loginAuthEntity);
+
+        HashMap<String, String> tokensMap = new HashMap<>();
+
+        tokensMap.put("access_token", accessToken);
+        tokensMap.put("refresh_token", refreshToken);
+
+        return tokensMap;
     }
 
     //현재 cookie 로 처리 >> 나중에 token 으로 변경 필요
@@ -96,7 +113,7 @@ public class UserService {
         loginAuthTimeCheck(loginAuthEntity);
 
         //세션 하고 있으면 통과시키는데 만료 시간 갱신
-        LoginAuthEntity updateLoginAuthEntity = LoginAuthEntity.updateExpireDate(loginAuthEntity, LOGIN_SESSION_TIME);
+        LoginAuthEntity updateLoginAuthEntity = LoginAuthEntity.updateExpireDate(loginAuthEntity, TOKEN_EXPIRED_TERM);
         loginAuthRepository.save(updateLoginAuthEntity);
     }
 
@@ -104,7 +121,7 @@ public class UserService {
 
         long sessionInterval = Duration.between(loginAuthEntity.getExpireDate(), LocalDateTime.now()).getSeconds();
 
-        if (sessionInterval > LOGIN_SESSION_TIME) {
+        if (sessionInterval > TOKEN_EXPIRED_TERM) {
             loginAuthRepository.deleteById(loginAuthEntity.getId());
             //세션 만료
             throw new UserException(UserExceptionMessage.NEED_LOGIN);
@@ -147,7 +164,7 @@ public class UserService {
     private void loginSessionCreateAndSave(Long userId) {
         String loginTokenKey = UUID.randomUUID().toString();
         loginAuthRepository.save(
-                LoginAuthEntity.create(userId, loginTokenKey, LOGIN_SESSION_TIME)
+                LoginAuthEntity.create(userId, loginTokenKey, TOKEN_EXPIRED_TERM)
         );
         new Cookie(LOGIN_SESSION_NAME, loginTokenKey);
 

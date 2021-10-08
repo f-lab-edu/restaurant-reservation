@@ -5,6 +5,8 @@ import com.restaurantreservation.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/user")
@@ -22,12 +24,12 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public Result userLogin(@RequestBody UserValue userValue) {
+    public Result<HashMap<String, String>> userLogin(@RequestBody UserValue userValue) {
         //login valid check
         UserValue.isLoginValid(userValue);
-        userService.loginUser(userValue);
+        HashMap<String, String> tokensMap = userService.loginUser(userValue);
 
-        return Result.createStatusAndMessage(200, "로그인 성공");
+        return Result.createAll(200, "로그인 성공", tokensMap);
     }
 
     @GetMapping("/health-check")

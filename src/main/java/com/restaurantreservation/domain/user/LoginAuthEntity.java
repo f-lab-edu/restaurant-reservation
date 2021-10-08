@@ -27,8 +27,8 @@ public class LoginAuthEntity {
     //만료시간
     private LocalDateTime expireDate;
 
-    public static LoginAuthEntity create(Long userId, String loginTokenKey, Long sessionTime) {
-        LocalDateTime expireDate = LocalDateTime.now().plusMinutes(sessionTime);
+    public static LoginAuthEntity create(Long userId, String loginTokenKey, Long expiredTerm) {
+        LocalDateTime expireDate = LocalDateTime.now().plusMinutes(expiredTerm);
         return new LoginAuthEntity(null, userId, loginTokenKey, null, expireDate);
     }
 
