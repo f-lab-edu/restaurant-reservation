@@ -1,10 +1,14 @@
 package com.restaurantreservation.controller;
 
 import com.restaurantreservation.domain.user.UserValue;
+import com.restaurantreservation.domain.user.login.JwtType;
+import com.restaurantreservation.error.exception.user.UserException;
+import com.restaurantreservation.error.message.user.JWTTokenExceptionMessage;
 import com.restaurantreservation.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 
 @RestController
@@ -32,8 +36,19 @@ public class UserController {
         return Result.createAll(200, "로그인 성공", tokensMap);
     }
 
+    @PostMapping("/access_token/reissue")
+    public Result<HashMap<String, String>> reissueAccessToken(HttpServletRequest request) {
+        String refreshToken = request.getHeader(JwtType.REFRESH_TOKEN.name());
+        //refresh token 유효한지 확인 후
+        //access token 재발급
+        if (refreshToken == null) {
+            throw new UserException(JWTTokenExceptionMessage.NULL);
+        }
+        return Result.createAll(201, "Access token 재발급 성공", userService.reissueAccessToken(refreshToken));
+    }
+
     @GetMapping("/health-check")
-    public String healthCheck(){
+    public String healthCheck() {
         return "health_ok";
     }
 }

@@ -9,6 +9,7 @@ import com.restaurantreservation.domain.user.login.JwtTokenProvider;
 import com.restaurantreservation.domain.user.login.JwtType;
 import com.restaurantreservation.encrypt.Encryption;
 import com.restaurantreservation.error.exception.user.UserException;
+import com.restaurantreservation.error.message.user.JWTTokenExceptionMessage;
 import com.restaurantreservation.error.message.user.UserExceptionMessage;
 import com.restaurantreservation.repository.history.UserStatusHistoryRepository;
 import com.restaurantreservation.repository.user.LoginAuthRepository;
@@ -75,7 +76,7 @@ public class UserService {
     /**
      * userlogin 처리 로직
      * 멀티 스레드 환경일때 어떻게 로그인 상태를 관리 할 지 생각하면서 구현 필요
-     *
+     * <p>
      * 로그인 성공하면 AccessToken, RefreshToken 생성 후 넘겨줌
      */
     public HashMap<String, String> loginUser(UserValue userValue) {
@@ -84,8 +85,8 @@ public class UserService {
         //확인, 통과
 
         // Access token 및 refresh token 생성
-        String accessToken = JwtTokenProvider.createJwtToken(userEntity.getId(), userEntity.getEmail(), JwtType.ACCESS_TOKEN);
-        String refreshToken = JwtTokenProvider.createJwtToken(userEntity.getId(), userEntity.getEmail(), JwtType.REFRESH_TOKEN);
+        String accessToken = createJwtToken(JwtType.ACCESS_TOKEN, userEntity.getId(), userEntity.getEmail());
+        String refreshToken = createJwtToken(JwtType.REFRESH_TOKEN, userEntity.getId(), userEntity.getEmail());
 
         //  refresh token 은 DB 에 저장
         LoginAuthEntity loginAuthEntity = LoginAuthEntity.create(userEntity.getId(), refreshToken, TOKEN_EXPIRED_TERM);
@@ -99,11 +100,40 @@ public class UserService {
         return tokensMap;
     }
 
-    //나중에 token 으로 변경 필요
+    private String createJwtToken(JwtType jwtType, Long userId, String email) {
+        return JwtTokenProvider.createJwtToken(userId, email, jwtType);
+    }
+
+    //accessToken 재발급 -> RefreshToken 확인 후 생성
+
+    /**
+     * access token 재발급 로직
+     * refreshToken 이 DB 에 저장된 것들과 일치한 지 확인 후
+     * Access Token 재발급
+     */
+    public HashMap<String, String> reissueAccessToken(String refreshToken) {
+        //유효한 토큰인지 검사
+        JwtTokenProvider.isValidToken(refreshToken, JwtType.REFRESH_TOKEN);
+
+        HashMap<String, Object> userIdAndEmail = JwtTokenProvider.getUserIdAndEmail(refreshToken, JwtType.REFRESH_TOKEN);
+
+        long userId = (long) userIdAndEmail.get("userId");
+        String email = (String) userIdAndEmail.get("email");
+
+        if (!loginAuthRepository.existsByUserIdAndAuthTokenKey(userId, refreshToken)) {
+            throw new UserException(JWTTokenExceptionMessage.REFRESH_TOKEN_NOT_EXISTS);
+        }
+        //Access token 생성
+        String newAccessToken = createJwtToken(JwtType.ACCESS_TOKEN, userId, email);
+
+        HashMap<String, String> tokensMap = new HashMap<>();
+        tokensMap.put(ACCESS_TOKEN_NAME, newAccessToken);
+        return tokensMap;
+    }
+
     public void checkAccessToken(String accessToken) {
         JwtTokenProvider.isValidToken(accessToken, JwtType.ACCESS_TOKEN);
     }
-
 
     private UserEntity emailCheck(UserValue userValue) {
         return userRepository.findByEmail(userValue.getEmail()).orElseThrow(

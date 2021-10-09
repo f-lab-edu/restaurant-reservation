@@ -15,7 +15,10 @@ public enum JWTTokenExceptionMessage implements BaseExceptionMessage {
     FAIL(400, "JWT 인증이 실패하였습니다."),
     NULL(400, "token is null"),
 
-    TOKEN_TIME_WRONG(600, "토큰 시간 에러")
+    TOKEN_TIME_WRONG(600, "토큰 시간 에러"),
+
+    REFRESH_TOKEN_NOT_EXISTS(600, "Refresh token 이 없습니다.")
+
     ;
 
     private final int code;

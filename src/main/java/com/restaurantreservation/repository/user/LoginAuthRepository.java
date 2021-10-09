@@ -7,4 +7,8 @@ import java.util.Optional;
 
 public interface LoginAuthRepository extends JpaRepository<LoginAuthEntity, Long> {
     Optional<LoginAuthEntity> findByAuthTokenKey(String tokenKey);
+
+    Optional<LoginAuthEntity> findByUserIdAndAuthTokenKey(long userId, String tokenKey);
+
+    Boolean existsByUserIdAndAuthTokenKey(long userId, String tokenKey);
 }

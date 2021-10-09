@@ -24,18 +24,19 @@ public class JwtTokenProvider {
     private final static String REFRESH_KEY = "refreshKey";
     private final static int EXPIRE_DATE = 1000 * 60 * 30;
 
-    public static String createJwtToken(Long userId, String memberId, JwtType type) {
+    public static String createJwtToken(Long userId, String email, JwtType type) {
 
         String key = type == JwtType.ACCESS_TOKEN ? SECRET_KEY : REFRESH_KEY;
 
         return Jwts.builder()
-                .setSubject(memberId)
+                .setSubject(email)
                 .setHeader(createHeader(type))
                 .setClaims(createClaims(userId))
                 .setExpiration(createExpireDate())
                 .signWith(SignatureAlgorithm.HS256, createSigningKey(key))
                 .compact();
     }
+
     /**
      * 유효한 토큰인지 확인하는 로직
      * 만약 ExpiredJwtException 이 터질 경우
@@ -44,11 +45,10 @@ public class JwtTokenProvider {
     public static void isValidToken(String token, JwtType jwtType) {
 
         try {
-            Claims claimsFormToken = getClaimsToken(token, jwtType);
-            log.info("Access expireTime: {}", claimsFormToken.getExpiration());
-            log.info("Access userId: {}", claimsFormToken.get("userId"));
+            Claims claimsToken = getClaimsToken(token, jwtType);
+            log.info("Access expireTime: {}", claimsToken.getExpiration());
+            log.info("Access userId: {}", claimsToken.get("userId"));
         } catch (ExpiredJwtException e) {
-
             throw new UserException(JWTTokenExceptionMessage.EXPIRED);
         } catch (MalformedJwtException e) {
             throw new UserException(JWTTokenExceptionMessage.MALFORMED);
@@ -59,6 +59,16 @@ public class JwtTokenProvider {
         } catch (NullPointerException e) {
             throw new UserException(JWTTokenExceptionMessage.NULL);
         }
+    }
+
+    public static HashMap<String, Object> getUserIdAndEmail(String token, JwtType jwtType) {
+        Claims claimsToken = getClaimsToken(token, jwtType);
+        String email = claimsToken.getSubject();
+        Long userId = (Long) claimsToken.get("userId");
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("userId", userId);
+        result.put("email", email);
+        return result;
     }
 
     private static Date createExpireDate() {
