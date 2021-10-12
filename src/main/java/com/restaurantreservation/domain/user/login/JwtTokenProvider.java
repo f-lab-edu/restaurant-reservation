@@ -10,7 +10,8 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
 import java.time.Duration;
-import java.util.*;
+import java.time.LocalDate;
+import java.util.Date;
 
 @Slf4j
 @Component
@@ -69,9 +70,12 @@ public class JwtTokenProvider {
     //LocalDate or LocalDateTime 를 쓰는것이 좋다.
     //JWT 라이브러리에서 Date 만 제공할때는 .. 흠....
     private static Date createExpireDate() {
-        Date now = new Date();
-        return new Date(now.getTime() + Duration.ofMinutes(EXPIRE_DATE).toMillis());
+
+        java.sql.Date date = java.sql.Date.valueOf(LocalDate.now());
+//        Date now = new Date();
+        return new Date(date.getTime() + Duration.ofMinutes(EXPIRE_DATE).toMillis());
     }
+
 
     private static Key createSigningKey(String key) {
         byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(key);
