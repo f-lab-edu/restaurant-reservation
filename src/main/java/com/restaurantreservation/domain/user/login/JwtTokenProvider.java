@@ -42,6 +42,9 @@ public class JwtTokenProvider {
      * 만약 ExpiredJwtException 이 터질 경우
      * 프론트 쪽에서 RefreshToken 으로 다시 AccessToken 을 만들어 달라고 요청을 해야 한다.
      */
+    /**
+     *
+     */
     public static void isValidToken(String token, JwtType jwtType) {
 
         try {
@@ -59,6 +62,7 @@ public class JwtTokenProvider {
         } catch (NullPointerException e) {
             throw new UserException(JWTTokenExceptionMessage.NULL);
         }
+        //nullPoint exception 이 제일 아래에 있을 필요가 있을까...
     }
 
     public static HashMap<String, Object> getUserIdAndEmail(String token, JwtType jwtType) {
@@ -71,10 +75,13 @@ public class JwtTokenProvider {
         return result;
     }
 
+    //Date 객체는 쓰지 않는게 좋다.
+    //LocalDate or LocalDateTime 를 쓰는것이 좋다.
     private static Date createExpireDate() {
         return new Date(System.currentTimeMillis() + (long) JwtTokenProvider.EXPIRE_DATE);
     }
 
+    //객체로 만들어 보자. Map은 다 바꿔보자.
     private static Map<String, Object> createHeader(JwtType type) {
         Map<String, Object> header = new HashMap<>();
 

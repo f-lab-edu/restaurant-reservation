@@ -3,8 +3,8 @@ package com.restaurantreservation.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.restaurantreservation.domain.user.UserType;
 import com.restaurantreservation.domain.user.UserValue;
+import com.restaurantreservation.domain.user.login.JwtTokenDto;
 import com.restaurantreservation.domain.user.login.JwtTokenProvider;
-import com.restaurantreservation.domain.user.login.JwtType;
 import com.restaurantreservation.error.exHandler.CommonExceptionHandler;
 import com.restaurantreservation.error.message.user.UserExceptionMessage;
 import com.restaurantreservation.service.UserService;
@@ -22,9 +22,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.filter.CharacterEncodingFilter;
-
-import java.util.HashMap;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -131,14 +128,15 @@ class UserControllerTest {
         UserValue getUserValue = new UserValue.Builder("test123@naver.com")
                 .password("1234")
                 .build();
-        HashMap<String, String> tokensMap = new HashMap<>();
+//        HashMap<String, String> tokensMap = new HashMap<>();
         String accessToken = "new access token";
         String refreshToken = "new refresh token";
 
-        tokensMap.put(JwtType.ACCESS_TOKEN.name(), accessToken);
-        tokensMap.put(JwtType.REFRESH_TOKEN.name(), refreshToken);
+        JwtTokenDto jwtTokenDto = JwtTokenDto.create(accessToken, refreshToken);
+//        tokensMap.put(JwtType.ACCESS_TOKEN.name(), accessToken);
+//        tokensMap.put(JwtType.REFRESH_TOKEN.name(), refreshToken);
 
-        given(userService.loginUser(any())).willReturn(tokensMap);
+        given(userService.loginUser(any())).willReturn(jwtTokenDto);
 
 
         MockHttpServletResponse getResponse = mvc.perform(
@@ -150,7 +148,7 @@ class UserControllerTest {
         assertThat(getResponse.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(getResponse.getContentAsString()).isEqualTo(
                 new ObjectMapper().writeValueAsString(
-                        Result.createAll(200, "로그인 성공", tokensMap)
+                        Result.createAll(200, "로그인 성공", jwtTokenDto)
                 )
         );
     }

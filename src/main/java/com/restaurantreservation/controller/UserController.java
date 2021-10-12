@@ -1,6 +1,7 @@
 package com.restaurantreservation.controller;
 
 import com.restaurantreservation.domain.user.UserValue;
+import com.restaurantreservation.domain.user.login.JwtTokenDto;
 import com.restaurantreservation.domain.user.login.JwtType;
 import com.restaurantreservation.error.exception.user.UserException;
 import com.restaurantreservation.error.message.user.JWTTokenExceptionMessage;
@@ -28,23 +29,24 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public Result<HashMap<String, String>> userLogin(@RequestBody UserValue userValue) {
+    public Result<JwtTokenDto> userLogin(@RequestBody UserValue userValue) {
         //login valid check
         UserValue.isLoginValid(userValue);
-        HashMap<String, String> tokensMap = userService.loginUser(userValue);
+        JwtTokenDto jwtTokenDto = userService.loginUser(userValue);
 
-        return Result.createAll(200, "로그인 성공", tokensMap);
+        return Result.createAll(200, "로그인 성공", jwtTokenDto);
     }
 
     @PostMapping("/access_token/reissue")
-    public Result<HashMap<String, String>> reissueAccessToken(HttpServletRequest request) {
+    public Result<JwtTokenDto> reissueAccessToken(HttpServletRequest request) {
         String refreshToken = request.getHeader(JwtType.REFRESH_TOKEN.name());
         //refresh token 유효한지 확인 후
         //access token 재발급
         if (refreshToken == null) {
             throw new UserException(JWTTokenExceptionMessage.NULL);
         }
-        return Result.createAll(201, "Access token 재발급 성공", userService.reissueAccessToken(refreshToken));
+        JwtTokenDto jwtTokenDto = userService.reissueAccessToken(refreshToken);
+        return Result.createAll(201, "Access token 재발급 성공", jwtTokenDto);
     }
 
     @GetMapping("/health-check")

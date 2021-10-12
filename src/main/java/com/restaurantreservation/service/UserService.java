@@ -5,6 +5,7 @@ import com.restaurantreservation.domain.user.LoginAuthEntity;
 import com.restaurantreservation.domain.user.UserEntity;
 import com.restaurantreservation.domain.user.UserStatus;
 import com.restaurantreservation.domain.user.UserValue;
+import com.restaurantreservation.domain.user.login.JwtTokenDto;
 import com.restaurantreservation.domain.user.login.JwtTokenProvider;
 import com.restaurantreservation.domain.user.login.JwtType;
 import com.restaurantreservation.encrypt.Encryption;
@@ -79,7 +80,8 @@ public class UserService {
      * <p>
      * 로그인 성공하면 AccessToken, RefreshToken 생성 후 넘겨줌
      */
-    public HashMap<String, String> loginUser(UserValue userValue) {
+    //map 은 최대한 줄이고 객체를 만들어서 넘겨보자.
+    public JwtTokenDto loginUser(UserValue userValue) {
         UserEntity userEntity = emailCheck(userValue);
         passwordCheck(userValue, userEntity.getPassword(), userEntity.getSalt());
         //확인, 통과
@@ -92,12 +94,7 @@ public class UserService {
         LoginAuthEntity loginAuthEntity = LoginAuthEntity.create(userEntity.getId(), refreshToken, TOKEN_EXPIRED_TERM);
         loginAuthRepository.save(loginAuthEntity);
 
-        HashMap<String, String> tokensMap = new HashMap<>();
-
-        tokensMap.put(ACCESS_TOKEN_NAME, accessToken);
-        tokensMap.put(REFRESH_TOKEN_NAME, refreshToken);
-
-        return tokensMap;
+        return JwtTokenDto.create(accessToken, refreshToken);
     }
 
     private String createJwtToken(JwtType jwtType, Long userId, String email) {
@@ -111,7 +108,7 @@ public class UserService {
      * refreshToken 이 DB 에 저장된 것들과 일치한 지 확인 후
      * Access Token 재발급
      */
-    public HashMap<String, String> reissueAccessToken(String refreshToken) {
+    public JwtTokenDto reissueAccessToken(String refreshToken) {
         //유효한 토큰인지 검사
         JwtTokenProvider.isValidToken(refreshToken, JwtType.REFRESH_TOKEN);
 
@@ -126,9 +123,8 @@ public class UserService {
         //Access token 생성
         String newAccessToken = createJwtToken(JwtType.ACCESS_TOKEN, userId, email);
 
-        HashMap<String, String> tokensMap = new HashMap<>();
-        tokensMap.put(ACCESS_TOKEN_NAME, newAccessToken);
-        return tokensMap;
+        JwtTokenDto accessToken = JwtTokenDto.createAccessToken(newAccessToken);
+        return accessToken;
     }
 
     public void checkAccessToken(String accessToken) {
