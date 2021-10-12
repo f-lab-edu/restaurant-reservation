@@ -1,4 +1,4 @@
-FROM openjdk:11-jdk-slim AS builder
+FROM openjdk:8-jdk-alpine3.9 AS builder
 COPY gradlew .
 COPY gradle gradle
 COPY build.gradle .
@@ -7,7 +7,7 @@ COPY src src
 RUN chmod +x ./gradlew
 RUN ./gradlew bootJar
 
-FROM openjdk:11-jdk-slim
+FROM openjdk:8-jdk-alpine3.9
 COPY --from=builder build/libs/*.jar app.jar
 
 # 상황에 맞게 실행하도록 추가 (dev, prod)
