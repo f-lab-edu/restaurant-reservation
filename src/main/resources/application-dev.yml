@@ -1,0 +1,16 @@
+#spring 2.4.X 이후에는 spring.profiles.active 가 deprecated 여서 아래와 같이 변경
+spring:
+  config:
+    activate:
+      on-profile: dev
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.type: trace
