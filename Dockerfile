@@ -18,7 +18,6 @@ EXPOSE 8080
 ENTRYPOINT ["java","-jar","/app.jar"]
 # jar 파일 실행
 
-
 #cli 로 도커 이미지 생성방법
 # docker build -t rest/spring-docker .
 #cli 로 실행 8080포트 , 실행후 localhost:8080 으로 확인
