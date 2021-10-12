@@ -34,6 +34,7 @@ dependencies {
 //	jpa 쿼리 확인을 위해서 추가 - 실 서버 사용 시에는 빼는것을 고려할 필요가 있음
 	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.7.1'
 
+	implementation 'com.h2database:h2:1.4.200'
 }
 
 test {
