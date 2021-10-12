@@ -9,9 +9,8 @@ import org.springframework.stereotype.Component;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.Duration;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -22,7 +21,7 @@ public class JwtTokenProvider {
      */
     private final static String SECRET_KEY = "secretKey";
     private final static String REFRESH_KEY = "refreshKey";
-    private final static int EXPIRE_DATE = 1000 * 60 * 30;
+    private final static int EXPIRE_DATE = 30;
 
     public static String createJwtToken(Long userId, String email, JwtType type) {
 
@@ -30,8 +29,8 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .setSubject(email)
-                .setHeader(createHeader(type))
-                .setClaims(createClaims(userId))
+                .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
+                .claim("userId", userId)
                 .setExpiration(createExpireDate())
                 .signWith(SignatureAlgorithm.HS256, createSigningKey(key))
                 .compact();
@@ -41,9 +40,6 @@ public class JwtTokenProvider {
      * 유효한 토큰인지 확인하는 로직
      * 만약 ExpiredJwtException 이 터질 경우
      * 프론트 쪽에서 RefreshToken 으로 다시 AccessToken 을 만들어 달라고 요청을 해야 한다.
-     */
-    /**
-     *
      */
     public static void isValidToken(String token, JwtType jwtType) {
 
@@ -59,43 +55,22 @@ public class JwtTokenProvider {
             throw new UserException(JWTTokenExceptionMessage.ClAIM_FAIL);
         } catch (JwtException e) {
             throw new UserException(JWTTokenExceptionMessage.FAIL);
-        } catch (NullPointerException e) {
-            throw new UserException(JWTTokenExceptionMessage.NULL);
         }
-        //nullPoint exception 이 제일 아래에 있을 필요가 있을까...
     }
 
-    public static HashMap<String, Object> getUserIdAndEmail(String token, JwtType jwtType) {
+    public static TokenValue getUserIdAndEmail(String token, JwtType jwtType) {
         Claims claimsToken = getClaimsToken(token, jwtType);
         String email = claimsToken.getSubject();
         Long userId = (Long) claimsToken.get("userId");
-        HashMap<String, Object> result = new HashMap<>();
-        result.put("userId", userId);
-        result.put("email", email);
-        return result;
+        return TokenValue.create(userId, email);
     }
 
     //Date 객체는 쓰지 않는게 좋다.
     //LocalDate or LocalDateTime 를 쓰는것이 좋다.
+    //JWT 라이브러리에서 Date 만 제공할때는 .. 흠....
     private static Date createExpireDate() {
-        return new Date(System.currentTimeMillis() + (long) JwtTokenProvider.EXPIRE_DATE);
-    }
-
-    //객체로 만들어 보자. Map은 다 바꿔보자.
-    private static Map<String, Object> createHeader(JwtType type) {
-        Map<String, Object> header = new HashMap<>();
-
-        header.put("typ", type);
-        header.put("alg", "HS256");
-        header.put("regDate", System.currentTimeMillis());
-
-        return header;
-    }
-
-    private static Map<String, Object> createClaims(long userId) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", userId);
-        return claims;
+        Date now = new Date();
+        return new Date(now.getTime() + Duration.ofMinutes(EXPIRE_DATE).toMillis());
     }
 
     private static Key createSigningKey(String key) {

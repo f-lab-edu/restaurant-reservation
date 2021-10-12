@@ -8,6 +8,7 @@ import com.restaurantreservation.domain.user.UserValue;
 import com.restaurantreservation.domain.user.login.JwtTokenDto;
 import com.restaurantreservation.domain.user.login.JwtTokenProvider;
 import com.restaurantreservation.domain.user.login.JwtType;
+import com.restaurantreservation.domain.user.login.TokenValue;
 import com.restaurantreservation.encrypt.Encryption;
 import com.restaurantreservation.error.exception.user.UserException;
 import com.restaurantreservation.error.message.user.JWTTokenExceptionMessage;
@@ -33,9 +34,6 @@ public class UserService {
     private final LoginAuthRepository loginAuthRepository;
 
     private static final Long TOKEN_EXPIRED_TERM = 5 * 60L;
-
-    private static final String ACCESS_TOKEN_NAME = JwtType.ACCESS_TOKEN.name();
-    private static final String REFRESH_TOKEN_NAME = JwtType.REFRESH_TOKEN.name();
 
     /**
      * 회원 저장 로직
@@ -112,10 +110,10 @@ public class UserService {
         //유효한 토큰인지 검사
         JwtTokenProvider.isValidToken(refreshToken, JwtType.REFRESH_TOKEN);
 
-        HashMap<String, Object> userIdAndEmail = JwtTokenProvider.getUserIdAndEmail(refreshToken, JwtType.REFRESH_TOKEN);
+        TokenValue userIdAndEmail = JwtTokenProvider.getUserIdAndEmail(refreshToken, JwtType.REFRESH_TOKEN);
 
-        long userId = (long) userIdAndEmail.get("userId");
-        String email = (String) userIdAndEmail.get("email");
+        long userId = userIdAndEmail.getUserId();
+        String email = userIdAndEmail.getMemberId();
 
         if (!loginAuthRepository.existsByUserIdAndAuthTokenKey(userId, refreshToken)) {
             throw new UserException(JWTTokenExceptionMessage.REFRESH_TOKEN_NOT_EXISTS);
@@ -123,8 +121,7 @@ public class UserService {
         //Access token 생성
         String newAccessToken = createJwtToken(JwtType.ACCESS_TOKEN, userId, email);
 
-        JwtTokenDto accessToken = JwtTokenDto.createAccessToken(newAccessToken);
-        return accessToken;
+        return JwtTokenDto.createAccessToken(newAccessToken);
     }
 
     public void checkAccessToken(String accessToken) {
