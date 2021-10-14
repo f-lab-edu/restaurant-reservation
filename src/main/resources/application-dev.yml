@@ -1,8 +1,8 @@
+#spring 2.4.X 이후에는 spring.profiles.active 가 deprecated 여서 아래와 같이 변경
 spring:
-  profiles:
-    active: jdbc
-
-
+  config:
+    activate:
+      on-profile: dev
   jpa:
     hibernate:
       ddl-auto: none
@@ -14,6 +14,3 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.type: trace
-
-server:
-  port: 80
