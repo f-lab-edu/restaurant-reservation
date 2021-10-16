@@ -5,6 +5,7 @@ import com.restaurantreservation.domain.user.UserEntity;
 import com.restaurantreservation.domain.user.UserStatus;
 import com.restaurantreservation.domain.user.UserType;
 import com.restaurantreservation.domain.user.UserValue;
+import com.restaurantreservation.domain.user.login.JwtTokenProvider;
 import com.restaurantreservation.encrypt.Encryption;
 import com.restaurantreservation.error.exception.user.UserException;
 import com.restaurantreservation.error.message.user.UserExceptionMessage;
@@ -29,6 +30,9 @@ import static org.mockito.Mockito.*;
 //Mock 객체를 사용하기 위해 추가
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
+
+    @Mock
+    JwtTokenProvider jwtTokenProvider;
 
     @Mock
     LoginAuthRepository loginAuthRepository;
@@ -61,7 +65,8 @@ class UserServiceTest {
     }
 
     UserEntity testUserEntity(UserValue userValue) {
-        return UserEntity.create(
+        return UserEntity.createTest(
+                1L,
                 userValue.getEmail(),
                 password,
                 salt,
@@ -144,7 +149,7 @@ class UserServiceTest {
         given(userRepository.findByEmail(userValue.getEmail())).willReturn(Optional.ofNullable(userEntity));
         given(encryption.encrypt(userValue.getPassword(), Objects.requireNonNull(userEntity).getSalt())).willReturn(password);
 
-        userJoinService.userLogin(userValue);
+        userJoinService.loginUser(userValue);
 
         verify(userRepository, times(1)).findByEmail(userValue.getEmail());
         verify(loginAuthRepository, times(1)).save(any());
@@ -158,7 +163,7 @@ class UserServiceTest {
         UserValue userValue = createUserValue();
         given(userRepository.findByEmail(userValue.getEmail())).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> userJoinService.userLogin(userValue))
+        assertThatThrownBy(() -> userJoinService.loginUser(userValue))
                 .isInstanceOf(UserException.class)
                 .hasMessage(UserExceptionMessage.USER_NOT_FOUNT.getErrorMessage());
 
@@ -176,7 +181,7 @@ class UserServiceTest {
         given(userRepository.findByEmail(userValue.getEmail())).willReturn(Optional.ofNullable(userEntity));
         given(encryption.encrypt(userValue.getPassword(), Objects.requireNonNull(userEntity).getSalt())).willReturn(password + "1");
 
-        assertThatThrownBy(() -> userJoinService.userLogin(userValue))
+        assertThatThrownBy(() -> userJoinService.loginUser(userValue))
                 .isInstanceOf(UserException.class)
                 .hasMessage(UserExceptionMessage.WRONG_PASSWORD.getErrorMessage());
 
@@ -185,5 +190,8 @@ class UserServiceTest {
         verifyNoMoreInteractions(userRepository);
         verifyNoMoreInteractions(loginAuthRepository);
     }
+
+    //유닛 테스트 - 자바 로직이 잘 돌아가는지 확인하는 테스트 - 누가 리펙토링해도 안정적이게 + 빠른 피드백
+    // 인테그레이션 테스트 - 전체 테스트 개념 - 전체 테스트 관련도 작성 필요
 
 }

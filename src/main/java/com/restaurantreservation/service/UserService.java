@@ -5,8 +5,13 @@ import com.restaurantreservation.domain.user.LoginAuthEntity;
 import com.restaurantreservation.domain.user.UserEntity;
 import com.restaurantreservation.domain.user.UserStatus;
 import com.restaurantreservation.domain.user.UserValue;
+import com.restaurantreservation.domain.user.login.JwtTokenDto;
+import com.restaurantreservation.domain.user.login.JwtTokenProvider;
+import com.restaurantreservation.domain.user.login.JwtType;
+import com.restaurantreservation.domain.user.login.TokenValue;
 import com.restaurantreservation.encrypt.Encryption;
 import com.restaurantreservation.error.exception.user.UserException;
+import com.restaurantreservation.error.message.user.JWTTokenExceptionMessage;
 import com.restaurantreservation.error.message.user.UserExceptionMessage;
 import com.restaurantreservation.repository.history.UserStatusHistoryRepository;
 import com.restaurantreservation.repository.user.LoginAuthRepository;
@@ -14,9 +19,6 @@ import com.restaurantreservation.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.servlet.http.Cookie;
-import java.util.UUID;
 
 
 @RequiredArgsConstructor
@@ -29,8 +31,7 @@ public class UserService {
 
     private final LoginAuthRepository loginAuthRepository;
 
-    private static final Long LOGIN_SESSION_TIME = 5 * 60L;
-    private static final String LOGIN_SESSION_NAME = "login_session";
+    private static final Long TOKEN_EXPIRED_TERM = 5 * 60L;
 
     /**
      * 회원 저장 로직
@@ -71,15 +72,59 @@ public class UserService {
 
     /**
      * userlogin 처리 로직
-     * 멀티 스레드 환경일때 어떻게 DB 를 관리 할 지 생각하면서 구현 필요
+     * 멀티 스레드 환경일때 어떻게 로그인 상태를 관리 할 지 생각하면서 구현 필요
+     * <p>
+     * 로그인 성공하면 AccessToken, RefreshToken 생성 후 넘겨줌
      */
-    public void userLogin(UserValue userValue) {
+    //map 은 최대한 줄이고 객체를 만들어서 넘겨보자.
+    public JwtTokenDto loginUser(UserValue userValue) {
         UserEntity userEntity = emailCheck(userValue);
         passwordCheck(userValue, userEntity.getPassword(), userEntity.getSalt());
-        //로그인 세션 생성 및 저장
-        loginSessionCreateAndSave(userEntity.getId());
+        //확인, 통과
+
+        // Access token 및 refresh token 생성
+        String accessToken = createJwtToken(JwtType.ACCESS_TOKEN, userEntity.getId(), userEntity.getEmail());
+        String refreshToken = createJwtToken(JwtType.REFRESH_TOKEN, userEntity.getId(), userEntity.getEmail());
+
+        //  refresh token 은 DB 에 저장
+        LoginAuthEntity loginAuthEntity = LoginAuthEntity.create(userEntity.getId(), refreshToken, TOKEN_EXPIRED_TERM);
+        loginAuthRepository.save(loginAuthEntity);
+
+        return JwtTokenDto.create(accessToken, refreshToken);
     }
 
+    private String createJwtToken(JwtType jwtType, Long userId, String email) {
+        return JwtTokenProvider.createJwtToken(userId, email, jwtType);
+    }
+
+    //accessToken 재발급 -> RefreshToken 확인 후 생성
+
+    /**
+     * access token 재발급 로직
+     * refreshToken 이 DB 에 저장된 것들과 일치한 지 확인 후
+     * Access Token 재발급
+     */
+    public JwtTokenDto reissueAccessToken(String refreshToken) {
+        //유효한 토큰인지 검사
+        JwtTokenProvider.isValidToken(refreshToken, JwtType.REFRESH_TOKEN);
+
+        TokenValue userIdAndEmail = JwtTokenProvider.getUserIdAndEmail(refreshToken, JwtType.REFRESH_TOKEN);
+
+        long userId = userIdAndEmail.getUserId();
+        String email = userIdAndEmail.getMemberId();
+
+        if (!loginAuthRepository.existsByUserIdAndAuthTokenKey(userId, refreshToken)) {
+            throw new UserException(JWTTokenExceptionMessage.REFRESH_TOKEN_NOT_EXISTS);
+        }
+        //Access token 생성
+        String newAccessToken = createJwtToken(JwtType.ACCESS_TOKEN, userId, email);
+
+        return JwtTokenDto.createAccessToken(newAccessToken);
+    }
+
+    public void checkAccessToken(String accessToken) {
+        JwtTokenProvider.isValidToken(accessToken, JwtType.ACCESS_TOKEN);
+    }
 
     private UserEntity emailCheck(UserValue userValue) {
         return userRepository.findByEmail(userValue.getEmail()).orElseThrow(
@@ -92,18 +137,6 @@ public class UserService {
         if (!inputPassword.equals(userEntityPassword)) {
             throw new UserException(UserExceptionMessage.WRONG_PASSWORD);
         }
-    }
-
-    /**
-     * 멀티 프로세스 환경에서는 내부의 session 으로는 동기화가 어렵기때문에
-     * 현재는 DB 에 저장해서 확인 - (나중에는 Redis DB 를 사용해 옮길 예정)
-     */
-    private void loginSessionCreateAndSave(Long userId) {
-        String loginTokenKey = UUID.randomUUID().toString();
-        loginAuthRepository.save(
-                LoginAuthEntity.create(userId, loginTokenKey, LOGIN_SESSION_TIME)
-        );
-        new Cookie(LOGIN_SESSION_NAME, loginTokenKey);
     }
 
     private UserEntity createUserEntity(UserValue userValue, String salt, String encryptedPassword) {

@@ -74,6 +74,19 @@ public class UserEntity {
         );
     }
 
+    public static UserEntity createTest(Long id,String email, String encryptedPassword, String salt, String name, String phoneNumber, UserType userType) {
+        return new UserEntity(
+                1L,
+                email,
+                encryptedPassword,
+                salt,
+                name,
+                phoneNumber,
+                userType,
+                UserStatus.ACTIVE
+        );
+    }
+
     private UserEntity(String email, String password,String salt, String name, String phoneNumber, UserType userType, UserStatus userStatus) {
         this.email = email;
         this.password = password;
@@ -84,5 +97,14 @@ public class UserEntity {
         this.userStatus = userStatus;
     }
 
-
+    public UserEntity(Long id, String email, String password, String salt, String name, String phoneNumber, UserType userType, UserStatus userStatus) {
+        this.id = id;
+        this.email = email;
+        this.password = password;
+        this.salt = salt;
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+        this.userType = userType;
+        this.userStatus = userStatus;
+    }
 }
