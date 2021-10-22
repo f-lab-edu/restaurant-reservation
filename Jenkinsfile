@@ -1,11 +1,12 @@
 node {
-    stage('Build') {
-        //
+    stage("Stage 1"){
+        echo "Hello"
     }
-    stage('Test') {
-        //
+    stage("Stage 2"){
+        echo "World"
+        sh "sleep 5"
     }
-    stage('Deploy') {
-        //
+    stage("Stage 3"){
+        echo "Good to see you!"
     }
 }
